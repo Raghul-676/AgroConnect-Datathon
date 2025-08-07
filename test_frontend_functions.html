@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Functions Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button { margin: 5px; padding: 10px 15px; cursor: pointer; }
+        select { margin: 5px; padding: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Market Analysis Frontend Functions Test</h1>
+    
+    <div id="test-results"></div>
+    
+    <h2>Manual Test Controls:</h2>
+    <div>
+        <label>Crop:</label>
+        <select id="crop-select">
+            <option value="">Select Crop</option>
+            <option value="tomato">Tomato</option>
+            <option value="onion">Onion</option>
+            <option value="potato">Potato</option>
+        </select>
+        
+        <label>State:</label>
+        <select id="state-select">
+            <option value="">Select State</option>
+            <option value="tamil nadu">Tamil Nadu</option>
+            <option value="maharashtra">Maharashtra</option>
+            <option value="uttar pradesh">Uttar Pradesh</option>
+        </select>
+        
+        <label>District:</label>
+        <select id="district-select">
+            <option value="">Select District</option>
+        </select>
+    </div>
+    
+    <div>
+        <button onclick="testUpdateDistricts()">Test updateDistricts()</button>
+        <button onclick="testUpdateAnalysis()">Test updateAnalysis()</button>
+        <button onclick="testAnalyzeMarket()">Test analyzeMarket()</button>
+        <button onclick="runAllTests()">Run All Tests</button>
+    </div>
+
+    <script>
+        let currentAnalysisData = null;
+        
+        // District mappings for different states
+        const districtMappings = {
+            'tamil nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Salem'],
+            'maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Nashik'],
+            'uttar pradesh': ['Lucknow', 'Kanpur', 'Agra', 'Varanasi']
+        };
+
+        function addTestResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('test-results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.innerHTML = `${new Date().toLocaleTimeString()}: ${message}`;
+            resultsDiv.appendChild(resultDiv);
+            console.log(message);
+        }
+
+        function updateDistricts() {
+            try {
+                const stateSelect = document.getElementById('state-select');
+                const districtSelect = document.getElementById('district-select');
+                const selectedState = stateSelect.value.toLowerCase();
+
+                addTestResult(`🏘️ Updating districts for state: ${selectedState}`, 'info');
+
+                // Clear existing options
+                districtSelect.innerHTML = '<option value="">Select District</option>';
+
+                if (selectedState && districtMappings[selectedState]) {
+                    addTestResult(`📍 Found districts: ${districtMappings[selectedState].join(', ')}`, 'success');
+                    districtMappings[selectedState].forEach(district => {
+                        const option = document.createElement('option');
+                        option.value = district.toLowerCase();
+                        option.textContent = district;
+                        districtSelect.appendChild(option);
+                    });
+                    addTestResult('✅ Districts updated successfully', 'success');
+                } else {
+                    addTestResult(`⚠️ No districts found for state: ${selectedState}`, 'error');
+                }
+            } catch (error) {
+                addTestResult(`❌ Error in updateDistricts: ${error.message}`, 'error');
+            }
+        }
+
+        function updateAnalysis() {
+            try {
+                const crop = document.getElementById('crop-select').value;
+                const state = document.getElementById('state-select').value;
+                const district = document.getElementById('district-select').value;
+                
+                addTestResult(`🔄 Auto-analysis check: crop=${crop}, state=${state}, district=${district}`, 'info');
+
+                if (crop && state) {
+                    addTestResult('✅ Auto-triggering market analysis...', 'success');
+                    // Simulate analysis trigger
+                    setTimeout(() => {
+                        addTestResult('📊 Analysis would be triggered here', 'info');
+                    }, 500);
+                } else {
+                    addTestResult('⚠️ Missing required fields for auto-analysis', 'error');
+                }
+            } catch (error) {
+                addTestResult(`❌ Error in updateAnalysis: ${error.message}`, 'error');
+            }
+        }
+
+        async function analyzeMarket() {
+            try {
+                const crop = document.getElementById('crop-select').value;
+                const state = document.getElementById('state-select').value;
+                const district = document.getElementById('district-select').value;
+
+                if (!crop || !state) {
+                    addTestResult('❌ Please select both crop and state to analyze the market', 'error');
+                    return;
+                }
+
+                addTestResult(`🔍 Testing API call for: ${crop} in ${state}${district ? ` (${district})` : ''}`, 'info');
+
+                const requestData = {
+                    crop: crop,
+                    state: state,
+                    district: district || null
+                };
+
+                // Test API call
+                const response = await fetch('http://localhost:8003/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    addTestResult(`✅ API call successful! Price: ₹${data.state_avg_price}, Trend: ${data.price_trend}`, 'success');
+                    addTestResult(`📊 Database ID: ${data.database_id}, Risk: ${data.risk_level}`, 'success');
+                } else {
+                    addTestResult(`❌ API call failed: HTTP ${response.status}`, 'error');
+                }
+
+            } catch (error) {
+                addTestResult(`❌ Error in analyzeMarket: ${error.message}`, 'error');
+            }
+        }
+
+        // Test functions
+        function testUpdateDistricts() {
+            addTestResult('🧪 Testing updateDistricts function...', 'info');
+            document.getElementById('state-select').value = 'tamil nadu';
+            updateDistricts();
+        }
+
+        function testUpdateAnalysis() {
+            addTestResult('🧪 Testing updateAnalysis function...', 'info');
+            document.getElementById('crop-select').value = 'tomato';
+            document.getElementById('state-select').value = 'tamil nadu';
+            updateAnalysis();
+        }
+
+        function testAnalyzeMarket() {
+            addTestResult('🧪 Testing analyzeMarket function...', 'info');
+            document.getElementById('crop-select').value = 'tomato';
+            document.getElementById('state-select').value = 'tamil nadu';
+            document.getElementById('district-select').value = 'coimbatore';
+            analyzeMarket();
+        }
+
+        function runAllTests() {
+            addTestResult('🚀 Running all tests...', 'info');
+            setTimeout(() => testUpdateDistricts(), 100);
+            setTimeout(() => testUpdateAnalysis(), 600);
+            setTimeout(() => testAnalyzeMarket(), 1100);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            addTestResult('🌾 Frontend Functions Test page loaded', 'success');
+            addTestResult(`🔧 Functions available: updateDistricts=${typeof updateDistricts}, updateAnalysis=${typeof updateAnalysis}, analyzeMarket=${typeof analyzeMarket}`, 'info');
+
+            // Add event listeners
+            document.getElementById('crop-select').addEventListener('change', updateAnalysis);
+            document.getElementById('state-select').addEventListener('change', function() {
+                updateDistricts();
+                updateAnalysis();
+            });
+            document.getElementById('district-select').addEventListener('change', updateAnalysis);
+            
+            addTestResult('✅ Event listeners added successfully', 'success');
+        });
+    </script>
+</body>
+</html>

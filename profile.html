@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Profile | AgroConnect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .profile-card {
+      transition: all 0.3s ease;
+    }
+    .profile-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    .activity-card {
+      transition: all 0.3s ease;
+    }
+    .activity-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(46, 125, 50, 0.2);
+    }
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #2e7d32;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="bg-green-50 text-gray-800 font-sans">
+
+  <!-- ✅ Navbar -->
+  <nav class="bg-green-700 text-white px-6 py-4 flex justify-between items-center shadow-md">
+    <h1 class="text-xl font-bold">AgroConnect</h1>
+    <a href="dashboard.html" class="text-sm bg-white text-green-700 px-4 py-2 rounded hover:bg-green-100 transition">Return Home</a>
+  </nav>
+
+  <!-- ✅ Main Profile Section -->
+  <div class="max-w-5xl mx-auto mt-10 p-8 bg-white rounded-xl shadow-xl profile-card">
+    <div class="flex items-center space-x-6">
+      <div class="relative">
+        <img src="https://www.w3schools.com/howto/img_avatar.png" alt="User Avatar" class="w-24 h-24 rounded-full border-4 border-green-600">
+        <div class="absolute bottom-0 right-0 w-6 h-6 bg-green-500 rounded-full border-2 border-white"></div>
+      </div>
+      <div>
+        <h2 id="userName" class="text-2xl font-bold text-green-800">
+          <span class="loading"></span> Loading...
+        </h2>
+        <p class="text-gray-600 text-sm">🌾 Farmer | AgroConnect Member</p>
+        <p id="memberSince" class="text-gray-500 text-xs mt-1">Member since: <span class="loading"></span></p>
+      </div>
+    </div>
+
+    <!-- ✅ Personal Info -->
+    <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+      <div>
+        <label class="font-semibold text-gray-700 flex items-center">
+          📧 Email Address
+        </label>
+        <p id="userEmail" class="bg-green-50 p-3 rounded border">
+          <span class="loading"></span> Loading...
+        </p>
+      </div>
+      <div>
+        <label class="font-semibold text-gray-700 flex items-center">
+          📱 Phone Number
+        </label>
+        <p id="userPhone" class="bg-green-50 p-3 rounded border">
+          <span class="loading"></span> Loading...
+        </p>
+      </div>
+      <div>
+        <label class="font-semibold text-gray-700 flex items-center">
+          🆔 User ID
+        </label>
+        <p id="userId" class="bg-green-50 p-3 rounded border font-mono text-xs">
+          <span class="loading"></span> Loading...
+        </p>
+      </div>
+      <div>
+        <label class="font-semibold text-gray-700 flex items-center">
+          📅 Account Status
+        </label>
+        <p class="bg-green-50 p-3 rounded border">
+          <span class="inline-block w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+          Active Member
+        </p>
+      </div>
+      <div class="md:col-span-2">
+        <label class="font-semibold text-gray-700 flex items-center">
+          🌾 Farming Profile
+        </label>
+        <p class="bg-green-50 p-3 rounded border">
+          Smart Agriculture Enthusiast | Using AgroConnect for data-driven farming decisions
+        </p>
+      </div>
+    </div>
+
+    <!-- ✅ User Activities -->
+    <div class="mt-10">
+      <h3 class="text-lg font-semibold text-green-800 mb-4">🚀 Quick Access to Tools</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <a href="soil_analysis/index.html" class="activity-card p-4 bg-green-100 rounded-lg hover:bg-green-200 transition shadow border-l-4 border-green-600">
+          <div class="flex items-center space-x-3">
+            <span class="text-2xl">🌱</span>
+            <div>
+              <h4 class="font-semibold">Soil Analysis</h4>
+              <p class="text-xs text-gray-600">Analyze soil composition</p>
+            </div>
+          </div>
+        </a>
+        <a href="irrigation_calculation/irrigation.html" class="activity-card p-4 bg-blue-100 rounded-lg hover:bg-blue-200 transition shadow border-l-4 border-blue-600">
+          <div class="flex items-center space-x-3">
+            <span class="text-2xl">💧</span>
+            <div>
+              <h4 class="font-semibold">Irrigation Planner</h4>
+              <p class="text-xs text-gray-600">Smart water management</p>
+            </div>
+          </div>
+        </a>
+        <a href="crop_prediction/crop_page.html" class="activity-card p-4 bg-yellow-100 rounded-lg hover:bg-yellow-200 transition shadow border-l-4 border-yellow-600">
+          <div class="flex items-center space-x-3">
+            <span class="text-2xl">�</span>
+            <div>
+              <h4 class="font-semibold">Crop Prediction</h4>
+              <p class="text-xs text-gray-600">AI-powered yield forecast</p>
+            </div>
+          </div>
+        </a>
+        <a href="market-analysis/market.html" class="activity-card p-4 bg-purple-100 rounded-lg hover:bg-purple-200 transition shadow border-l-4 border-purple-600">
+          <div class="flex items-center space-x-3">
+            <span class="text-2xl">�</span>
+            <div>
+              <h4 class="font-semibold">Market Analysis</h4>
+              <p class="text-xs text-gray-600">Price trends & insights</p>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- ✅ Update Profile -->
+    <div class="mt-8 flex justify-between items-center">
+      <button onclick="window.location.href='dashboard.html'" class="bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700 transition">
+        ← Back to Dashboard
+      </button>
+      <button class="bg-green-700 text-white px-6 py-2 rounded hover:bg-green-800 transition" onclick="window.location.href='settings.html'">
+        ✏️ Edit Profile
+      </button>
+    </div>
+  </div>
+
+  <!-- Authentication -->
+  <script src="auth.js"></script>
+
+  <!-- AgroBot Chat Widget -->
+  <script src="agrobot-chat.js"></script>
+
+  <script>
+    // Load user profile data
+    function loadUserProfile() {
+      const user = getCurrentUser();
+      if (!user) {
+        // Redirect to home if not authenticated
+        window.location.href = 'home.html';
+        return;
+      }
+
+      // Update profile information
+      document.getElementById('userName').textContent = user.name;
+      document.getElementById('userEmail').textContent = user.email;
+      document.getElementById('userPhone').textContent = user.phone;
+      document.getElementById('userId').textContent = user.id;
+
+      // Update member since date
+      const memberSince = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }) : 'Unknown';
+      document.getElementById('memberSince').textContent = `Member since: ${memberSince}`;
+    }
+
+
+
+    // Load profile when page loads
+    document.addEventListener('DOMContentLoaded', loadUserProfile);
+  </script>
+
+</body>
+</html>

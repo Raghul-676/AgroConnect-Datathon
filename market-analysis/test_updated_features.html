@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Updated Market Analysis Features</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f0f8f0;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        button {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1b5e20;
+        }
+        .result {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success {
+            border-left: 4px solid #4caf50;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌾 Test Updated Market Analysis Features</h1>
+    
+    <div class="highlight">
+        <h3>✅ Fixed Issues:</h3>
+        <ul>
+            <li><strong>Dynamic Values:</strong> State & district prices, trends, and recommendations now vary</li>
+            <li><strong>Professional PDF:</strong> Enhanced PDF format with colors, sections, and branding</li>
+            <li><strong>Chart Integration:</strong> Price trend chart instead of data table</li>
+        </ul>
+    </div>
+
+    <div class="test-container">
+        <h3>🧪 Test Different Crops - Should Show Varied Results</h3>
+        <button onclick="testCrop('tomato', 'tamil nadu')">Test Tomato</button>
+        <button onclick="testCrop('onion', 'maharashtra')">Test Onion</button>
+        <button onclick="testCrop('potato', 'punjab')">Test Potato</button>
+        <button onclick="testCrop('brinjal', 'karnataka')">Test Brinjal</button>
+        <div id="cropResults" class="result"></div>
+    </div>
+
+    <div class="test-container">
+        <h3>📊 Test Same Crop Multiple Times - Should Show Different Values</h3>
+        <p>Click multiple times to see varied results (changes every hour)</p>
+        <button onclick="testSameCrop()">Test Tomato in Tamil Nadu (Multiple Times)</button>
+        <div id="sameResults" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8003';
+
+        async function testCrop(crop, state) {
+            const resultDiv = document.getElementById('cropResults');
+            resultDiv.textContent = 'Testing...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/analyze`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ crop, state })
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.textContent = `
+🌾 ${crop.toUpperCase()} in ${state.toUpperCase()}:
+💰 State Price: ₹${data.state_avg_price}
+🏘️ District Price: ₹${data.district_avg_price || 'N/A'}
+📈 Trend: ${data.price_trend} (${data.trend_percentage}%)
+💡 Recommendation: ${data.recommendation}
+🎯 Confidence: ${Math.round(data.prediction_confidence * 100)}%
+                `;
+                resultDiv.className = 'result success';
+                
+            } catch (error) {
+                resultDiv.textContent = `Error: ${error.message}`;
+                resultDiv.className = 'result';
+            }
+        }
+
+        let testCount = 0;
+        async function testSameCrop() {
+            testCount++;
+            const resultDiv = document.getElementById('sameResults');
+            
+            try {
+                const response = await fetch(`${API_BASE}/analyze`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ crop: 'tomato', state: 'tamil nadu', district: 'coimbatore' })
+                });
+                
+                const data = await response.json();
+                
+                const newResult = `
+Test ${testCount} - Tomato in Tamil Nadu:
+💰 State Price: ₹${data.state_avg_price}
+🏘️ District Price: ₹${data.district_avg_price}
+📈 Trend: ${data.price_trend} (${data.trend_percentage}%)
+💡 Recommendation: ${data.recommendation}
+🎯 Confidence: ${Math.round(data.prediction_confidence * 100)}%
+-------------------`;
+                
+                resultDiv.textContent = newResult + (resultDiv.textContent || '');
+                resultDiv.className = 'result success';
+                
+            } catch (error) {
+                resultDiv.textContent = `Test ${testCount} Error: ${error.message}`;
+                resultDiv.className = 'result';
+            }
+        }
+
+        // Auto-test on page load
+        window.addEventListener('load', () => {
+            console.log('🧪 Test page loaded - ready to test updated features');
+        });
+    </script>
+</body>
+</html>

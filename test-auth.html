@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Authentication - AgroConnect</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f8f0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #02693c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #014d2d;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AgroConnect Authentication Test</h1>
+        <p>Test the authentication system functionality.</p>
+        
+        <h3>Quick Actions:</h3>
+        <button onclick="createDemoUser()">Create Demo User</button>
+        <button onclick="loginDemoUser()">Login as Demo User</button>
+        <button onclick="checkCurrentUser()">Check Current User</button>
+        <button onclick="logout()">Logout</button>
+        <button onclick="clearAllData()">Clear All Data</button>
+        
+        <h3>Navigation:</h3>
+        <button onclick="goToHome()">Go to Home</button>
+        <button onclick="goToDashboard()">Go to Dashboard</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        function showResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = message;
+            resultsDiv.appendChild(div);
+        }
+
+        function createDemoUser() {
+            const demoUser = {
+                id: Date.now().toString(),
+                name: "Demo Farmer",
+                email: "demo@agroconnect.com",
+                password: "demo123",
+                phone: "+91 9876543210",
+                createdAt: new Date().toISOString()
+            };
+
+            const users = JSON.parse(localStorage.getItem('agroconnect_users') || '[]');
+            
+            // Remove existing demo user if any
+            const filteredUsers = users.filter(u => u.email !== demoUser.email);
+            filteredUsers.push(demoUser);
+            
+            localStorage.setItem('agroconnect_users', JSON.stringify(filteredUsers));
+            showResult('Demo user created!<br><strong>Email:</strong> demo@agroconnect.com<br><strong>Password:</strong> demo123', 'success');
+        }
+
+        function loginDemoUser() {
+            const users = JSON.parse(localStorage.getItem('agroconnect_users') || '[]');
+            const demoUser = users.find(u => u.email === 'demo@agroconnect.com');
+            
+            if (demoUser) {
+                localStorage.setItem('agroconnect_current_user', JSON.stringify(demoUser));
+                showResult('Logged in as Demo Farmer!', 'success');
+            } else {
+                showResult('Demo user not found. Create it first.', 'error');
+            }
+        }
+
+        function checkCurrentUser() {
+            const currentUser = getCurrentUser();
+            if (currentUser) {
+                showResult(`<strong>Current User:</strong><br><pre>${JSON.stringify(currentUser, null, 2)}</pre>`, 'info');
+            } else {
+                showResult('No user logged in', 'info');
+            }
+        }
+
+        function clearAllData() {
+            localStorage.removeItem('agroconnect_users');
+            localStorage.removeItem('agroconnect_current_user');
+            showResult('All authentication data cleared!', 'info');
+        }
+
+        function goToHome() {
+            window.location.href = 'home.html';
+        }
+
+        function goToDashboard() {
+            window.location.href = 'dashboard.html';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agro Connect</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #ffffff;
+      color: #02693c;
+      overflow-x: hidden;
+    }
+    html { scroll-behavior: smooth; }
+
+    /* Navbar */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #02693c;
+      padding: 15px 8%;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      border-bottom: 3px solid #014d2d;
+    }
+    nav .logo {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #ffffff;
+      letter-spacing: 1px;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 30px;
+    }
+    nav ul li {
+      cursor: pointer;
+      color: #ffffff;
+      transition: color 0.3s, transform 0.3s;
+    }
+    nav ul li:hover {
+      color: #d0f0bf;
+      transform: translateY(-2px);
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      padding: 120px 8%;
+      background: #02693c;
+      color: #ffffff;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      position: relative;
+      z-index: 1;
+    }
+    .hero h1 {
+      font-size: 3.2rem;
+      margin-bottom: 15px;
+      animation: fadeInDown 1s ease;
+    }
+    .hero p {
+      font-size: 1.3rem;
+      max-width: 700px;
+      margin: 0 auto 25px;
+      line-height: 1.8;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 1s ease;
+    }
+    .hero p.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .hero button {
+      padding: 12px 25px;
+      background: #ffffff;
+      color: #02693c;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
+    }
+    .hero button:hover {
+      background: #d0f0bf;
+      transform: scale(1.05);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+    }
+
+    @keyframes fadeInDown {
+      from { transform: translateY(-50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Section Wrapper */
+    section {
+      opacity: 0;
+      transform: translateY(50px);
+      transition: opacity 1s ease, transform 1s ease, border-color 0.5s, box-shadow 0.6s ease;
+      margin: 70px auto;
+      max-width: 1100px;
+      border: 3px solid transparent;
+      border-radius: 10px;
+      padding: 60px 10%;
+      background: #fff;
+    }
+    section.active {
+      opacity: 1;
+      transform: translateY(0);
+      border-color: #02693c;
+      box-shadow: 0 8px 25px rgba(2,105,60,0.15);
+    }
+
+    /* Vision Section */
+    .vision { background: #d0f0bf; }
+    .vision h2 { font-size: 2.2rem; margin-bottom: 20px; }
+    .vision p {
+      font-size: 1.2rem;
+      line-height: 1.8;
+      color: #014d2d;
+      margin-bottom: 20px;
+    }
+
+    /* Why Section */
+    .why h2 { font-size: 2rem; margin-bottom: 20px; }
+    .why p { font-size: 1.1rem; margin-bottom: 30px; color: #014d2d; }
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .stat-box {
+      background: #d0f0bf;
+      padding: 20px;
+      border-radius: 8px;
+      width: 230px;
+      border: 2px solid #02693c;
+      text-align: center;
+      transition: transform 0.4s, box-shadow 0.4s;
+    }
+    .stat-box:hover {
+      transform: translateY(-8px) scale(1.05);
+      box-shadow: 0 8px 20px rgba(2,105,60,0.25);
+    }
+    .stat-number {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #02693c;
+    }
+    .stat-label {
+      margin-top: 10px;
+      font-size: 1rem;
+      color: #02693c;
+    }
+
+    /* Special Section */
+    .special {
+      background: linear-gradient(135deg, #d0f0bf 0%, #ffffff 100%);
+      text-align: center;
+      padding: 80px 10%;
+      border-radius: 10px;
+      margin: 80px auto;
+      position: relative;
+      overflow: hidden;
+    }
+    .special::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: url('https://www.transparenttextures.com/patterns/diagonal-noise.png');
+      opacity: 0.08;
+      pointer-events: none;
+    }
+    .special h2 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      color: #02693c;
+      position: relative;
+      z-index: 2;
+    }
+    .special-intro {
+      font-size: 1.2rem;
+      max-width: 800px;
+      margin: 0 auto 50px;
+      color: #014d2d;
+      line-height: 1.8;
+      position: relative;
+      z-index: 2;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 25px;
+      position: relative;
+      z-index: 2;
+    }
+    .card {
+      background: #ffffff;
+      border: 2px solid #02693c;
+      border-radius: 10px;
+      padding: 25px;
+      text-align: left;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      opacity: 0;
+    }
+    .card h3 {
+      margin-bottom: 10px;
+      font-size: 1.3rem;
+      color: #014d2d;
+    }
+    .card p {
+      color: #014d2d;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+    .card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 12px 25px rgba(2, 105, 60, 0.3);
+      border-color: #014d2d;
+    }
+    .slide-left { transform: translateX(-80px); }
+    .slide-right { transform: translateX(80px); }
+    .slide-up { transform: translateY(80px); }
+    .slide-bottom { transform: translateY(80px); }
+    .card.visible {
+      transform: translateX(0) translateY(0);
+      opacity: 1;
+    }
+
+    /* Footer */
+    .footer {
+      background: #6a4a3f;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      margin-top: 40px;
+      box-shadow: 0 -4px 10px rgba(0,0,0,0.3);
+      cursor: pointer;
+    }
+    .footer .socials {
+      margin: 10px 0;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+    .footer .socials a {
+      color: white;
+      text-decoration: none;
+      font-size: 1.3rem;
+      transition: color 0.3s, transform 0.3s;
+    }
+    .footer .socials a:hover {
+      color: #d0f0bf;
+      transform: scale(1.2);
+    }
+
+    /* Authentication Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal {
+      background: white;
+      padding: 2rem;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      position: relative;
+      animation: modalSlideIn 0.3s ease;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-header h2 {
+      color: #02693c;
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-header p {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #02693c;
+      font-weight: 500;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #02693c;
+      box-shadow: 0 0 0 3px rgba(2, 105, 60, 0.1);
+    }
+
+    .auth-button {
+      width: 100%;
+      padding: 0.75rem;
+      background: #02693c;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      margin-bottom: 1rem;
+    }
+
+    .auth-button:hover {
+      background: #014d2d;
+      transform: translateY(-2px);
+    }
+
+    .auth-button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #666;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close:hover {
+      color: #02693c;
+    }
+
+    .switch-auth {
+      text-align: center;
+      margin-top: 1rem;
+      color: #666;
+    }
+
+    .switch-auth a {
+      color: #02693c;
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .switch-auth a:hover {
+      text-decoration: underline;
+    }
+
+    .error-message {
+      background: #fee;
+      color: #c33;
+      padding: 0.5rem;
+      border-radius: 5px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .success-message {
+      background: #efe;
+      color: #3c3;
+      padding: 0.5rem;
+      border-radius: 5px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav>
+    <div class="logo">Agro Connect</div>
+    <ul>
+      <li onclick="scrollToSection('vision')">Vision</li>
+      <li onclick="scrollToSection('why')">Why</li>
+      <li onclick="scrollToSection('special')">Special</li>
+      <li onclick="window.location.href='dashboard.html'">Dashboard</li>
+      <li onclick="showLoginModal()">Login</li>
+      <li onclick="showSignupModal()">Sign Up</li>
+    </ul>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero" id="hero">
+    <h1>AGRO CONNECT</h1>
+    <p id="hero-text">"AI for Agriculture. Growth for Farmers. Progress for India." Our mission is to connect technology with agriculture and empower every farmer to rise with knowledge, data, and confidence.</p>
+    <button onclick="window.location.href='dashboard.html'">Get Started</button>
+  </header>
+
+  <!-- Vision -->
+  <section class="vision" id="vision">
+    <h2>Our Vision</h2>
+    <p>To revolutionize agriculture, empower every farmer with technology, and add <strong>2% more farmers</strong> to India's backbone—because when farming thrives, the nation rises.</p>
+    <p>We envision an India where every farmer can make informed decisions, increase their yields, reduce costs, and transform agriculture into a powerful driver of national growth.</p>
+  </section>
+
+  <!-- Why -->
+  <section class="why" id="why">
+    <h2>Why?</h2>
+    <p>India’s agriculture is at a critical juncture. Here's why transformation is urgent:</p>
+    <div class="stats">
+      <div class="stat-box">
+        <div class="stat-number" data-target="60">0%</div>
+        <div class="stat-label">Workforce in Agriculture</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number" data-target="18">0%</div>
+        <div class="stat-label">Agriculture's GDP Contribution</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number" data-target="70">0%</div>
+        <div class="stat-label">Farmers Without Real-time Data</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number" data-target="35">0%</div>
+        <div class="stat-label">Potential Income Growth</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Special -->
+  <section class="special" id="special">
+    <h2>The Special on Us</h2>
+    <p class="special-intro">
+      Agro Connect is not just a platform—it’s a game changer for Indian agriculture.
+      We combine AI, local expertise, and scalable technology to transform farms into profit-driven ecosystems.
+    </p>
+    <div class="cards">
+      <div class="card slide-left">
+        <h3>AI-Powered Farm Insights</h3>
+        <p>Predictive analytics for crops, soil health, and weather. Empowering farmers with the knowledge to act before challenges arise.</p>
+      </div>
+      <div class="card slide-up">
+        <h3>Localized Agri-Intelligence</h3>
+        <p>Solutions tailored in regional languages to match the diversity of India's farming practices.</p>
+      </div>
+      <div class="card slide-right">
+        <h3>Smart Resource Utilization</h3>
+        <p>Reduce wastage, cut costs, and boost yields with data-backed farming strategies.</p>
+      </div>
+      <div class="card slide-bottom">
+        <h3>Scalable for India</h3>
+        <p>A platform designed to handle small village farms and nation-wide agricultural networks with equal ease.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer" onclick="scrollToSection('hero')">
+    <div class="socials">
+      <a href="https://www.instagram.com/auraforge_org/" target="_blank">Instagram</a>
+      <a href="https://x.com/AuraForge_org?t=OeecMmQlit58VizCnw8DIA&s=08" target="_blank">X</a>
+      <a href="https://www.facebook.com/share/1Bq8jy2bUn/" target="_blank">Facebook</a>
+    </div>
+    <p>© 2025 Agro Connect | Empowering Farmers with AI</p>
+  </footer>
+
+  <script>
+    function scrollToSection(id) {
+      document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+    }
+
+    window.addEventListener('load', () => {
+      document.getElementById('hero-text').classList.add('visible');
+    });
+
+    const counters = document.querySelectorAll('.stat-number');
+    window.addEventListener('scroll', () => {
+      const triggerHeight = window.innerHeight;
+      counters.forEach(counter => {
+        const rect = counter.getBoundingClientRect();
+        if (rect.top < triggerHeight) {
+          const target = +counter.getAttribute('data-target');
+          const updateCount = () => {
+            const current = +counter.innerText.replace('%', '');
+            const increment = Math.ceil(target / 50);
+            if (current < target) {
+              counter.innerText = `${current + increment}%`;
+              setTimeout(updateCount, 30);
+            } else {
+              counter.innerText = `${target}%`;
+            }
+          };
+          if (counter.innerText === '0%') updateCount();
+        }
+      });
+    });
+
+    const sections = document.querySelectorAll('section');
+    window.addEventListener('scroll', () => {
+      sections.forEach(sec => {
+        const rect = sec.getBoundingClientRect();
+        if (rect.top < window.innerHeight - 100) {
+          sec.classList.add('active');
+        }
+      });
+    });
+
+    const specialCards = document.querySelectorAll('.special .card');
+    window.addEventListener('scroll', () => {
+      specialCards.forEach(card => {
+        const rect = card.getBoundingClientRect();
+        if (rect.top < window.innerHeight - 50) {
+          card.classList.add('visible');
+        }
+      });
+    });
+
+    // Authentication functionality
+    function showLoginModal() {
+      document.getElementById('loginModal').style.display = 'flex';
+      document.getElementById('signupModal').style.display = 'none';
+    }
+
+    function showSignupModal() {
+      document.getElementById('signupModal').style.display = 'flex';
+      document.getElementById('loginModal').style.display = 'none';
+    }
+
+    function closeModals() {
+      document.getElementById('loginModal').style.display = 'none';
+      document.getElementById('signupModal').style.display = 'none';
+      clearMessages();
+    }
+
+    function clearMessages() {
+      document.querySelectorAll('.error-message, .success-message').forEach(msg => {
+        msg.style.display = 'none';
+      });
+    }
+
+    function showError(modalId, message) {
+      const errorDiv = document.querySelector(`#${modalId} .error-message`);
+      errorDiv.textContent = message;
+      errorDiv.style.display = 'block';
+    }
+
+    function showSuccess(modalId, message) {
+      const successDiv = document.querySelector(`#${modalId} .success-message`);
+      successDiv.textContent = message;
+      successDiv.style.display = 'block';
+    }
+
+    function handleLogin(event) {
+      event.preventDefault();
+      clearMessages();
+
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      // Basic validation
+      if (!email || !password) {
+        showError('loginModal', 'Please fill in all fields');
+        return;
+      }
+
+      if (!isValidEmail(email)) {
+        showError('loginModal', 'Please enter a valid email address');
+        return;
+      }
+
+      // Check if user exists in localStorage
+      const users = JSON.parse(localStorage.getItem('agroconnect_users') || '[]');
+      const user = users.find(u => u.email === email && u.password === password);
+
+      if (user) {
+        // Store current user session
+        localStorage.setItem('agroconnect_current_user', JSON.stringify(user));
+        showSuccess('loginModal', 'Login successful! Redirecting...');
+
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1500);
+      } else {
+        showError('loginModal', 'Invalid email or password');
+      }
+    }
+
+    function handleSignup(event) {
+      event.preventDefault();
+      clearMessages();
+
+      const name = document.getElementById('signupName').value;
+      const email = document.getElementById('signupEmail').value;
+      const password = document.getElementById('signupPassword').value;
+      const phone = document.getElementById('signupPhone').value;
+
+      // Basic validation
+      if (!name || !email || !password || !phone) {
+        showError('signupModal', 'Please fill in all fields');
+        return;
+      }
+
+      if (!isValidEmail(email)) {
+        showError('signupModal', 'Please enter a valid email address');
+        return;
+      }
+
+      if (password.length < 6) {
+        showError('signupModal', 'Password must be at least 6 characters long');
+        return;
+      }
+
+      if (!isValidPhone(phone)) {
+        showError('signupModal', 'Please enter a valid phone number');
+        return;
+      }
+
+      // Check if user already exists
+      const users = JSON.parse(localStorage.getItem('agroconnect_users') || '[]');
+      if (users.find(u => u.email === email)) {
+        showError('signupModal', 'An account with this email already exists');
+        return;
+      }
+
+      // Create new user
+      const newUser = {
+        id: Date.now().toString(),
+        name: name,
+        email: email,
+        password: password,
+        phone: phone,
+        createdAt: new Date().toISOString()
+      };
+
+      users.push(newUser);
+      localStorage.setItem('agroconnect_users', JSON.stringify(users));
+      localStorage.setItem('agroconnect_current_user', JSON.stringify(newUser));
+
+      showSuccess('signupModal', 'Account created successfully! Redirecting...');
+
+      setTimeout(() => {
+        window.location.href = 'dashboard.html';
+      }, 1500);
+    }
+
+    function isValidEmail(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    }
+
+    function isValidPhone(phone) {
+      const phoneRegex = /^[+]?[\d\s\-\(\)]{10,}$/;
+      return phoneRegex.test(phone);
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const loginModal = document.getElementById('loginModal');
+      const signupModal = document.getElementById('signupModal');
+      if (event.target === loginModal || event.target === signupModal) {
+        closeModals();
+      }
+    }
+  </script>
+
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal-overlay">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModals()">×</button>
+      <div class="modal-header">
+        <h2>Welcome Back</h2>
+        <p>Sign in to your AgroConnect account</p>
+      </div>
+
+      <div class="error-message"></div>
+      <div class="success-message"></div>
+
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="loginEmail">Email Address</label>
+          <input type="email" id="loginEmail" required>
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" required>
+        </div>
+
+        <button type="submit" class="auth-button">Sign In</button>
+      </form>
+
+      <div class="switch-auth">
+        Don't have an account? <a onclick="showSignupModal()">Sign up here</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Signup Modal -->
+  <div id="signupModal" class="modal-overlay">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModals()">×</button>
+      <div class="modal-header">
+        <h2>Join AgroConnect</h2>
+        <p>Create your account to get started</p>
+      </div>
+
+      <div class="error-message"></div>
+      <div class="success-message"></div>
+
+      <form onsubmit="handleSignup(event)">
+        <div class="form-group">
+          <label for="signupName">Full Name</label>
+          <input type="text" id="signupName" required>
+        </div>
+
+        <div class="form-group">
+          <label for="signupEmail">Email Address</label>
+          <input type="email" id="signupEmail" required>
+        </div>
+
+        <div class="form-group">
+          <label for="signupPassword">Password</label>
+          <input type="password" id="signupPassword" required minlength="6">
+        </div>
+
+        <div class="form-group">
+          <label for="signupPhone">Phone Number</label>
+          <input type="tel" id="signupPhone" required>
+        </div>
+
+        <button type="submit" class="auth-button">Create Account</button>
+      </form>
+
+      <div class="switch-auth">
+        Already have an account? <a onclick="showLoginModal()">Sign in here</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- AgroBot Chat Widget -->
+  <script src="agrobot-chat.js"></script>
+
+</body>
+</html>

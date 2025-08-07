@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Crop Prediction API</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Crop Prediction API Test</h1>
+    
+    <button onclick="testHealth()">Test Health</button>
+    <button onclick="testPrediction()">Test Crop Prediction</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const resultsDiv = document.getElementById('results');
+
+        function addResult(message, data = null, isSuccess = true) {
+            const div = document.createElement('div');
+            div.className = `result ${isSuccess ? 'success' : 'error'}`;
+            div.innerHTML = `<strong>${message}</strong>`;
+            
+            if (data) {
+                const pre = document.createElement('pre');
+                pre.textContent = JSON.stringify(data, null, 2);
+                div.appendChild(pre);
+            }
+            
+            resultsDiv.appendChild(div);
+        }
+
+        async function testHealth() {
+            try {
+                const response = await fetch('http://localhost:8002/health');
+                const data = await response.json();
+                addResult('Health Check:', data, true);
+            } catch (error) {
+                addResult('Health Check Failed:', error.message, false);
+            }
+        }
+
+        async function testPrediction() {
+            try {
+                const testData = {
+                    crop: "rice",
+                    soil_type: "alluvial",
+                    season: "kharif",
+                    irrigation_type: "canal",
+                    field_size: 5.0,
+                    investment: 15000
+                };
+
+                const response = await fetch('http://localhost:8002/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                addResult('Crop Prediction Test:', data, true);
+            } catch (error) {
+                addResult('Crop Prediction Test Failed:', error.message, false);
+            }
+        }
+    </script>
+</body>
+</html>

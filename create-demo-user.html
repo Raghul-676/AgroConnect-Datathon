@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Demo User - AgroConnect</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f8f0;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #02693c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #014d2d;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AgroConnect Demo Setup</h1>
+        <p>This page helps you set up demo users for testing the authentication system.</p>
+        
+        <button onclick="createDemoUser()">Create Demo User</button>
+        <button onclick="clearAllUsers()">Clear All Users</button>
+        <button onclick="showAllUsers()">Show All Users</button>
+        <button onclick="goToHome()">Go to Home Page</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function createDemoUser() {
+            const demoUser = {
+                id: Date.now().toString(),
+                name: "Demo Farmer",
+                email: "demo@agroconnect.com",
+                password: "demo123",
+                phone: "+91 9876543210",
+                createdAt: new Date().toISOString()
+            };
+
+            const users = JSON.parse(localStorage.getItem('agroconnect_users') || '[]');
+            
+            // Check if demo user already exists
+            if (users.find(u => u.email === demoUser.email)) {
+                showResult('Demo user already exists!', 'info');
+                return;
+            }
+
+            users.push(demoUser);
+            localStorage.setItem('agroconnect_users', JSON.stringify(users));
+            
+            showResult('Demo user created successfully!<br>Email: demo@agroconnect.com<br>Password: demo123', 'success');
+        }
+
+        function clearAllUsers() {
+            localStorage.removeItem('agroconnect_users');
+            localStorage.removeItem('agroconnect_current_user');
+            showResult('All users cleared!', 'info');
+        }
+
+        function showAllUsers() {
+            const users = JSON.parse(localStorage.getItem('agroconnect_users') || '[]');
+            if (users.length === 0) {
+                showResult('No users found', 'info');
+                return;
+            }
+
+            let userList = '<strong>Registered Users:</strong><br>';
+            users.forEach(user => {
+                userList += `• ${user.name} (${user.email})<br>`;
+            });
+            showResult(userList, 'info');
+        }
+
+        function goToHome() {
+            window.location.href = 'home.html';
+        }
+
+        function showResult(message, type) {
+            const resultsDiv = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = message;
+            resultsDiv.appendChild(div);
+        }
+    </script>
+</body>
+</html>

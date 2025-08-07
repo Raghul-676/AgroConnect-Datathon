@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Crop Yield Prediction - AgroConnect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+
+
+  </style>
+</head>
+<body class="bg-green-50 text-gray-800">
+
+  <!-- ✅ Navbar -->
+  <nav class="bg-green-700 text-white shadow sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold tracking-wide">🌱 AgroConnect</h1>
+      <a href="../dashboard.html" class="text-sm hover:underline">Return Home</a>
+    </div>
+  </nav>
+
+  <!-- ✅ Main Section -->
+  <section class="max-w-7xl mx-auto px-6 py-10">
+    <h2 class="text-2xl font-bold mb-6 text-green-800">🌾 Crop Yield Prediction Portal</h2>
+
+    <!-- Form -->
+    <form id="predictionForm" class="space-y-6" onsubmit="return false;">
+
+      <!-- Crop Selection -->
+      <div>
+        <label class="block font-semibold mb-1">Crop (English / Tamil)</label>
+        <select id="crop" name="crop" class="w-full p-3 border rounded shadow-sm" required>
+          <option value="" selected disabled>Select a crop</option>
+          <option value="Rice">Rice / அரிசி</option>
+          <option value="Wheat">Wheat / கோதுமை</option>
+          <option value="Maize">Maize / செம்மகிழ்</option>
+          <option value="Sugarcane">Sugarcane / கரும்பு</option>
+          <option value="Banana">Banana / வாழை</option>
+          <option value="Tomato">Tomato / தக்காளி</option>
+          <option value="Cotton">Cotton / பருத்தி</option>
+          <option value="Groundnut">Groundnut / நிலக்கடலை</option>
+        </select>
+      </div>
+
+      <!-- Soil Type and Season -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block font-semibold mb-1">Soil Type</label>
+          <select id="soilType" name="soil_type" class="w-full p-3 border rounded shadow-sm" required>
+            <option value="" selected disabled>Select soil type</option>
+            <option value="Alluvial">Alluvial</option>
+            <option value="Black">Black</option>
+            <option value="Red">Red</option>
+            <option value="Laterite">Laterite</option>
+            <option value="Desert">Desert</option>
+            <option value="Mountain">Mountain</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Season</label>
+          <select id="season" name="season" class="w-full p-3 border rounded shadow-sm" required>
+            <option value="" selected disabled>Select season</option>
+            <option value="Kharif">Kharif (Monsoon)</option>
+            <option value="Rabi">Rabi (Winter)</option>
+            <option value="Zaid">Zaid (Summer)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Irrigation and Field Size -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block font-semibold mb-1">Irrigation Type</label>
+          <select id="irrigationType" name="irrigation_type" class="w-full p-3 border rounded shadow-sm" required>
+            <option value="" selected disabled>Select irrigation</option>
+            <option value="Canal">Canal</option>
+            <option value="Well">Well</option>
+            <option value="Drip">Drip</option>
+            <option value="Sprinkler">Sprinkler</option>
+            <option value="None">Rain-fed (None)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Field Size (Acres)</label>
+          <input type="number" id="fieldSize" name="field_size" class="w-full p-3 border rounded shadow-sm" placeholder="Enter size in acres" step="0.01" min="0.1" required>
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Initial Investment (₹)</label>
+          <input type="number" id="investment" name="investment" class="w-full p-3 border rounded shadow-sm" placeholder="e.g., 15000" min="0" value="0">
+        </div>
+      </div>
+
+      <!-- Location (Optional for display) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block font-semibold mb-1">Location (Optional)</label>
+          <input type="text" id="location" name="location" class="w-full p-3 border rounded shadow-sm" placeholder="Enter your location">
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Additional Notes</label>
+          <input type="text" id="notes" name="notes" class="w-full p-3 border rounded shadow-sm" placeholder="Any additional information">
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div class="pt-6">
+        <button type="submit" class="bg-green-700 text-white px-6 py-3 rounded hover:bg-green-800">
+          Predict Yield
+        </button>
+      </div>
+    </form>
+
+    <!-- Result Display -->
+    <div id="resultSection" class="mt-10 hidden bg-white border rounded p-6 shadow-md">
+      <!-- Results will be populated by JavaScript -->
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="mt-10 hidden bg-blue-50 border border-blue-200 rounded p-6 text-center">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3"></div>
+      <p class="text-blue-700">Analyzing your crop data and generating predictions...</p>
+    </div>
+
+    <!-- Error Display -->
+    <div id="errorSection" class="mt-10 hidden bg-red-50 border border-red-200 rounded p-6">
+      <h3 class="text-lg font-semibold text-red-800 mb-2">❌ Prediction Error</h3>
+      <p id="errorMessage" class="text-red-700"></p>
+      <button onclick="document.getElementById('errorSection').classList.add('hidden')"
+              class="mt-3 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+        Close
+      </button>
+    </div>
+  </section>
+
+  <!-- ✅ Footer -->
+  <footer class="bg-[#8B5E3C] text-white mt-20">
+    <div class="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div>
+        <h4 class="text-lg font-semibold mb-3">About AgroConnect</h4>
+        <p class="text-sm">An AI-driven platform helping farmers predict yield, manage irrigation, and access government schemes.</p>
+      </div>
+      <div>
+        <h4 class="text-lg font-semibold mb-3">Contact</h4>
+        <p class="text-sm">📞 +91 98765 43210</p>
+        <p class="text-sm">📧 support@agroconnect.in</p>
+        <p class="text-sm">🌾 Tamil Nadu, India</p>
+      </div>
+      <div>
+        <h4 class="text-lg font-semibold mb-3">Navigation</h4>
+        <ul class="space-y-1 text-sm">
+          <li><a href="#" class="hover:underline">Home</a></li>
+          <li><a href="#" class="hover:underline">Schemes</a></li>
+          <li><a href="#" class="hover:underline">Irrigation</a></li>
+          <li><a href="#" class="hover:underline">Crop Prediction</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="bg-[#734B2C] text-center text-sm py-4">
+      © 2025 AgroConnect. All rights reserved.
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      console.log('🚀 Form submitted via JavaScript');
+
+      // Get form data
+      const formData = {
+        crop: document.getElementById('crop').value,
+        soil_type: document.getElementById('soilType').value,
+        season: document.getElementById('season').value,
+        irrigation_type: document.getElementById('irrigationType').value,
+        field_size: parseFloat(document.getElementById('fieldSize').value),
+        investment: parseFloat(document.getElementById('investment').value) || 0
+      };
+
+      console.log('📝 Form data:', formData);
+
+      // Validate required fields
+      if (!formData.crop || !formData.soil_type || !formData.season ||
+          !formData.irrigation_type || !formData.field_size) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
+      // Show loading state
+      const submitButton = document.querySelector('button[type="submit"]');
+      const originalText = submitButton.textContent;
+      submitButton.textContent = 'Predicting...';
+      submitButton.disabled = true;
+
+      // Hide previous results and errors
+      document.getElementById('resultSection').classList.add('hidden');
+      document.getElementById('errorSection').classList.add('hidden');
+      document.getElementById('loadingIndicator').classList.remove('hidden');
+
+      try {
+        console.log('🌐 Making API call to /predict');
+        console.log('📤 Request body:', JSON.stringify(formData));
+
+        // Make API call
+        const response = await fetch('http://localhost:8002/predict', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData)
+        });
+
+        console.log('📥 Response status:', response.status, response.statusText);
+
+        if (!response.ok) {
+          let errorMessage = 'Prediction failed';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.detail || errorMessage;
+          } catch (e) {
+            // If JSON parsing fails, use the response status text
+            errorMessage = response.statusText || errorMessage;
+          }
+          throw new Error(errorMessage);
+        }
+
+        let result;
+        try {
+          result = await response.json();
+        } catch (e) {
+          throw new Error('Invalid response from server. Please try again.');
+        }
+
+        // Validate result structure
+        if (!result || !result.success || !result.predictions) {
+          throw new Error('Invalid prediction data received from server.');
+        }
+
+        // Hide loading indicator
+        document.getElementById('loadingIndicator').classList.add('hidden');
+
+        // Update result display
+        updateResultDisplay(result, formData.investment);
+
+        // Show result section
+        document.getElementById('resultSection').classList.remove('hidden');
+
+        // Scroll to results
+        document.getElementById('resultSection').scrollIntoView({
+          behavior: 'smooth'
+        });
+
+      } catch (error) {
+        console.error('Error:', error);
+
+        // Hide loading indicator
+        document.getElementById('loadingIndicator').classList.add('hidden');
+
+        // Show error
+        document.getElementById('errorMessage').textContent = error.message;
+        document.getElementById('errorSection').classList.remove('hidden');
+
+        // Scroll to error
+        document.getElementById('errorSection').scrollIntoView({
+          behavior: 'smooth'
+        });
+      } finally {
+        // Reset button
+        submitButton.textContent = originalText;
+        submitButton.disabled = false;
+      }
+    });
+
+    function updateResultDisplay(result, investment) {
+      const resultSection = document.getElementById('resultSection');
+
+      // Extract data from backend response structure
+      const predictions = result.predictions || {};
+      const marketAnalysis = result.market_analysis || {};
+      const riskAssessment = result.risk_assessment || {};
+
+      // Calculate performance rating based on profit margin
+      const profitMargin = marketAnalysis.profit_margin_percent || 0;
+      let performanceRating = 'Poor';
+      if (profitMargin >= 70) performanceRating = 'Excellent';
+      else if (profitMargin >= 50) performanceRating = 'Good';
+      else if (profitMargin >= 30) performanceRating = 'Average';
+
+      // Update the result content with enhanced display
+      resultSection.innerHTML = `
+        <h3 class="text-xl font-semibold text-green-800 mb-4">📈 Crop Yield Prediction Results</h3>
+
+        <!-- Main Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="bg-blue-50 p-4 rounded-lg">
+            <h4 class="font-semibold text-blue-800 mb-2">🌾 Yield Prediction</h4>
+            <p class="text-2xl font-bold text-blue-600">${(predictions.expected_yield_tons || 0).toFixed(1)} tons</p>
+            <p class="text-sm text-blue-600">${(predictions.total_quintals || 0).toFixed(1)} quintals</p>
+            <p class="text-sm text-gray-600">${(predictions.yield_per_acre_tons || 0).toFixed(2)} tons/acre</p>
+          </div>
+
+          <div class="bg-green-50 p-4 rounded-lg">
+            <h4 class="font-semibold text-green-800 mb-2">💰 Financial Analysis</h4>
+            <p class="text-2xl font-bold text-green-600">₹${(marketAnalysis.estimated_revenue || 0).toLocaleString()}</p>
+            <p class="text-sm text-green-600">Revenue</p>
+            <p class="text-sm text-gray-600">₹${(marketAnalysis.current_price_per_quintal || 0).toLocaleString()}/quintal</p>
+          </div>
+
+          <div class="bg-purple-50 p-4 rounded-lg">
+            <h4 class="font-semibold text-purple-800 mb-2">📊 Profit Analysis</h4>
+            <p class="text-2xl font-bold text-purple-600">₹${(marketAnalysis.estimated_profit || 0).toLocaleString()}</p>
+            <p class="text-sm text-purple-600">Net Profit</p>
+            <p class="text-sm text-gray-600">${(marketAnalysis.profit_margin_percent || 0).toFixed(1)}% margin</p>
+          </div>
+        </div>
+
+        <!-- Detailed Breakdown -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div class="bg-white border rounded-lg p-4">
+            <h4 class="font-semibold text-gray-800 mb-3">💵 Cost-Benefit Analysis</h4>
+            <div class="space-y-2">
+              <div class="flex justify-between">
+                <span>Investment:</span>
+                <span class="font-medium">₹${investment.toLocaleString()}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Estimated Cost:</span>
+                <span class="font-medium">₹${(marketAnalysis.estimated_cost || 0).toLocaleString()}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Expected Revenue:</span>
+                <span class="font-medium text-green-600">₹${(marketAnalysis.estimated_revenue || 0).toLocaleString()}</span>
+              </div>
+              <hr>
+              <div class="flex justify-between font-bold">
+                <span>Net Profit:</span>
+                <span class="text-green-600">₹${(marketAnalysis.estimated_profit || 0).toLocaleString()}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Performance Rating:</span>
+                <span class="font-bold ${getPerformanceColor(performanceRating)}">${performanceRating}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white border rounded-lg p-4">
+            <h4 class="font-semibold text-gray-800 mb-3">⚠️ Risk Assessment</h4>
+            <div class="space-y-2">
+              <div class="flex justify-between">
+                <span>Risk Level:</span>
+                <span class="font-medium ${getRiskColor(riskAssessment.risk_level || 'Medium')}">${riskAssessment.risk_level || 'Medium'}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Soil Suitability:</span>
+                <span class="font-medium">${riskAssessment.factors?.soil_suitability || 'N/A'}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Irrigation Efficiency:</span>
+                <span class="font-medium">${riskAssessment.factors?.irrigation_efficiency || 'N/A'}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Seasonal Factor:</span>
+                <span class="font-medium">${riskAssessment.factors?.seasonal_factor || 'N/A'}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Confidence Score:</span>
+                <span class="font-medium">${(result.confidence_score || 0).toFixed(1)}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <h4 class="font-semibold text-yellow-800 mb-2">💡 Recommendations</h4>
+          <ul class="list-disc list-inside space-y-1 text-yellow-700">
+            ${(result.recommendations || []).map(rec => `<li>${rec}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+    }
+
+    function getPerformanceColor(rating) {
+      switch(rating.toLowerCase()) {
+        case 'excellent': return 'text-green-600';
+        case 'good': return 'text-blue-600';
+        case 'average': return 'text-yellow-600';
+        case 'poor': return 'text-red-600';
+        default: return 'text-gray-600';
+      }
+    }
+
+    function getRiskColor(riskLevel) {
+      switch(riskLevel.toLowerCase()) {
+        case 'low': return 'text-green-600';
+        case 'medium': return 'text-yellow-600';
+        case 'high': return 'text-red-600';
+        default: return 'text-gray-600';
+      }
+    }
+  </script>
+
+  <!-- Authentication -->
+  <script src="../auth.js"></script>
+
+  <!-- AgroBot Chat Widget -->
+  <script src="../agrobot-chat.js"></script>
+
+</body>
+</html>

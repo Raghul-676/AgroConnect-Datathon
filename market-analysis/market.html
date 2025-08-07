@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Market Analysis | AgroConnect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+</head>
+<body class="bg-green-50 font-sans text-gray-800">
+
+  <!-- ✅ Navbar -->
+  <nav class="bg-green-700 text-white px-6 py-4 shadow">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <h1 class="text-2xl font-bold">🌾 AgroConnect</h1>
+      <a href="../dashboard.html" class="text-sm hover:underline">Return Home</a>
+    </div>
+  </nav>
+
+  <!-- ✅ Page Header -->
+  <header class="max-w-7xl mx-auto px-6 py-8">
+    <h2 class="text-3xl font-bold mb-2">📊 Market Analysis</h2>
+    <p class="text-gray-600">Get real-time vegetable price trends, state & district breakdowns, and smart recommendations.</p>
+  </header>
+
+  <!-- ✅ Filters -->
+  <section class="max-w-7xl mx-auto px-6 mb-8">
+    <div class="bg-white p-6 rounded-lg shadow-md">
+      <h3 class="text-lg font-semibold mb-4 text-gray-700">🔍 Select Market Parameters</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Crop</label>
+          <select class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500" id="crop-select">
+            <option value="">Select Crop</option>
+            <option value="tomato">🍅 Tomato</option>
+            <option value="onion">🧅 Onion</option>
+            <option value="potato">🥔 Potato</option>
+            <option value="brinjal">🍆 Brinjal</option>
+            <option value="chillies">🌶️ Chillies</option>
+            <option value="cauliflower">🥬 Cauliflower</option>
+            <option value="cabbage">🥬 Cabbage</option>
+            <option value="carrot">🥕 Carrot</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">State</label>
+          <select class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500" id="state-select">
+            <option value="">Select State</option>
+            <option value="tamil nadu">Tamil Nadu</option>
+            <option value="andhra pradesh">Andhra Pradesh</option>
+            <option value="karnataka">Karnataka</option>
+            <option value="punjab">Punjab</option>
+            <option value="maharashtra">Maharashtra</option>
+            <option value="gujarat">Gujarat</option>
+            <option value="rajasthan">Rajasthan</option>
+            <option value="uttar pradesh">Uttar Pradesh</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">District (Optional)</label>
+          <select class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500" id="district-select">
+            <option value="">Select District</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mt-4 flex justify-between items-center">
+        <button onclick="analyzeMarket()" id="analyzeBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition duration-200">
+          📊 Analyze Market
+        </button>
+        <div id="loadingIndicator" class="hidden flex items-center text-green-600">
+          <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600 mr-2"></div>
+          Fetching market data...
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ✅ Report Cards -->
+  <section class="max-w-7xl mx-auto px-6 mb-10">
+    <div id="resultsSection" class="hidden">
+      <h3 class="text-xl font-semibold mb-4 text-gray-800">📊 Market Analysis Results</h3>
+      <div class="grid md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white p-5 shadow-lg rounded-lg border-l-4 border-green-500 transform hover:scale-105 transition duration-200">
+          <h4 class="font-bold text-gray-700 flex items-center">
+            <span class="mr-2">🏛️</span>State Avg Price
+          </h4>
+          <p id="statePrice" class="text-2xl text-green-700 font-bold mt-2">₹0 / quintal</p>
+          <p class="text-xs text-gray-500 mt-1">Based on multiple markets</p>
+        </div>
+
+        <div class="bg-white p-5 shadow-lg rounded-lg border-l-4 border-blue-500 transform hover:scale-105 transition duration-200">
+          <h4 class="font-bold text-gray-700 flex items-center">
+            <span class="mr-2">🏘️</span>District Avg Price
+          </h4>
+          <p id="districtPrice" class="text-2xl text-blue-700 font-bold mt-2">₹0 / quintal</p>
+          <p class="text-xs text-gray-500 mt-1">Local market average</p>
+        </div>
+
+        <div class="bg-white p-5 shadow-lg rounded-lg border-l-4 border-purple-500 transform hover:scale-105 transition duration-200">
+          <h4 class="font-bold text-gray-700 flex items-center">
+            <span class="mr-2">📈</span>Price Trend
+          </h4>
+          <p id="priceTrend" class="text-2xl font-bold mt-2">Stable</p>
+          <p id="trendPercentage" class="text-xs text-gray-500 mt-1">0% change</p>
+        </div>
+
+        <div class="bg-white p-5 shadow-lg rounded-lg border-l-4 border-orange-500 transform hover:scale-105 transition duration-200">
+          <h4 class="font-bold text-gray-700 flex items-center">
+            <span class="mr-2">💡</span>Recommendation
+          </h4>
+          <div id="recommendation" class="mt-2">
+            <span class="inline-block text-white bg-gray-500 text-sm px-3 py-1 rounded-full">Analyze to get recommendation</span>
+          </div>
+          <p id="confidence" class="text-xs text-gray-500 mt-1">Confidence: 0%</p>
+        </div>
+      </div>
+
+      <!-- Enhanced Analysis Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white p-5 shadow-lg rounded-lg border-l-4 border-indigo-500 transform hover:scale-105 transition duration-200">
+          <h4 class="font-bold text-gray-700 flex items-center">
+            <span class="mr-2">⚠️</span>Risk Level
+          </h4>
+          <p id="riskLevel" class="text-2xl font-bold mt-2 text-indigo-600">Medium</p>
+          <p id="volatility" class="text-xs text-gray-500 mt-1">Volatility: 0%</p>
+        </div>
+
+        <div class="bg-white p-5 shadow-lg rounded-lg border-l-4 border-pink-500 transform hover:scale-105 transition duration-200">
+          <h4 class="font-bold text-gray-700 flex items-center">
+            <span class="mr-2">🏆</span>Quality Grade
+          </h4>
+          <p id="qualityGrade" class="text-2xl font-bold mt-2 text-pink-600">A</p>
+          <p id="demandSupply" class="text-xs text-gray-500 mt-1">D/S Ratio: 1.0</p>
+        </div>
+
+        <div class="bg-white p-5 shadow-lg rounded-lg border-l-4 border-teal-500 transform hover:scale-105 transition duration-200">
+          <h4 class="font-bold text-gray-700 flex items-center">
+            <span class="mr-2">🚚</span>Transport Cost
+          </h4>
+          <p id="transportCost" class="text-2xl font-bold mt-2 text-teal-600">₹150</p>
+          <p id="seasonalFactor" class="text-xs text-gray-500 mt-1">Seasonal: 1.0x</p>
+        </div>
+
+        <div class="bg-white p-5 shadow-lg rounded-lg border-l-4 border-yellow-500 transform hover:scale-105 transition duration-200">
+          <h4 class="font-bold text-gray-700 flex items-center">
+            <span class="mr-2">⏰</span>Best Time
+          </h4>
+          <p id="bestTime" class="text-lg font-bold mt-2 text-yellow-600">Current time</p>
+          <p id="storageRec" class="text-xs text-gray-500 mt-1">Storage advice</p>
+        </div>
+      </div>
+
+      <!-- Market Details -->
+      <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
+        <div class="bg-gray-50 px-6 py-3 border-b">
+          <h4 class="font-semibold text-gray-800">🏪 Market Details</h4>
+        </div>
+        <div class="p-6">
+          <div id="marketDetails" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Market details will be populated here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Price Trend Chart -->
+      <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="bg-gray-50 px-6 py-3 border-b">
+          <h4 class="font-semibold text-gray-800">📈 Price Trend Analysis</h4>
+        </div>
+        <div class="p-6">
+          <canvas id="priceChart" height="100"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Default message when no analysis is done -->
+    <div id="defaultMessage" class="text-center py-12">
+      <div class="bg-white rounded-lg shadow-md p-8">
+        <div class="text-6xl mb-4">📊</div>
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">Market Analysis Ready</h3>
+        <p class="text-gray-500 mb-4">Select crop, state, and district to get real-time market insights</p>
+        <div class="flex justify-center space-x-4 text-sm text-gray-400">
+          <span>🏛️ State Averages</span>
+          <span>📈 Price Trends</span>
+          <span>💡 AI Recommendations</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ✅ Export -->
+  <section class="max-w-7xl mx-auto px-6 mb-20">
+    <button onclick="downloadPDF()" class="bg-green-700 hover:bg-green-800 text-white px-6 py-3 rounded shadow">
+      📥 Download Report as PDF
+    </button>
+  </section>
+
+  <!-- ✅ Footer -->
+  <footer class="bg-[#6B4226] text-white">
+    <div class="max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div>
+        <h4 class="font-semibold text-lg mb-2">About AgroConnect</h4>
+        <p class="text-sm">Your smart agriculture companion for irrigation, yield prediction, market analysis, and more.</p>
+      </div>
+      <div>
+        <h4 class="font-semibold text-lg mb-2">Quick Links</h4>
+        <ul class="text-sm space-y-1">
+          <li><a href="/" class="hover:underline">Home</a></li>
+          <li><a href="#" class="hover:underline">Soil Analysis</a></li>
+          <li><a href="#" class="hover:underline">Yield Calculator</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold text-lg mb-2">Contact</h4>
+        <p class="text-sm">📞 +91 98765 43210</p>
+        <p class="text-sm">📧 support@agroconnect.in</p>
+      </div>
+    </div>
+    <div class="bg-[#5A321F] text-center text-sm py-3">© 2025 AgroConnect. All rights reserved.</div>
+  </footer>
+
+  <!-- ✅ Scripts -->
+  <script>
+    // Global variables
+    let currentAnalysisData = null;
+
+    // District mappings for different states
+    const districtMappings = {
+      'tamil nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Salem', 'Erode', 'Tirupur', 'Vellore', 'Theni'],
+      'andhra pradesh': ['Visakhapatnam', 'Vijayawada', 'Guntur', 'Nellore', 'Kurnool', 'Rajahmundry', 'Tirupati'],
+      'karnataka': ['Bangalore', 'Mysore', 'Hubli', 'Mangalore', 'Belgaum', 'Gulbarga', 'Davangere'],
+      'punjab': ['Ludhiana', 'Amritsar', 'Jalandhar', 'Patiala', 'Bathinda', 'Mohali', 'Hoshiarpur'],
+      'maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Nashik', 'Aurangabad', 'Solapur', 'Kolhapur'],
+      'gujarat': ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Bhavnagar', 'Jamnagar', 'Gandhinagar'],
+      'rajasthan': ['Jaipur', 'Jodhpur', 'Kota', 'Bikaner', 'Ajmer', 'Udaipur', 'Alwar'],
+      'uttar pradesh': ['Lucknow', 'Kanpur', 'Ghaziabad', 'Agra', 'Varanasi', 'Meerut', 'Allahabad']
+    };
+
+    // Global function declarations
+    window.updateDistricts = function() {
+      const stateSelect = document.getElementById('state-select');
+      const districtSelect = document.getElementById('district-select');
+      const selectedState = stateSelect.value.toLowerCase();
+
+      console.log('🏘️ Updating districts for state:', selectedState);
+
+      // Clear existing options
+      districtSelect.innerHTML = '<option value="">Select District</option>';
+
+      if (selectedState && districtMappings[selectedState]) {
+        console.log('📍 Found districts:', districtMappings[selectedState]);
+        districtMappings[selectedState].forEach(district => {
+          const option = document.createElement('option');
+          option.value = district.toLowerCase();
+          option.textContent = district;
+          districtSelect.appendChild(option);
+        });
+        console.log('✅ Districts updated successfully');
+      } else {
+        console.log('⚠️ No districts found for state:', selectedState);
+      }
+    };
+
+    window.updateAnalysis = function() {
+      const crop = document.getElementById('crop-select').value;
+      const state = document.getElementById('state-select').value;
+      const district = document.getElementById('district-select').value;
+
+      console.log('🔄 Auto-analysis check:', { crop, state, district });
+
+      if (crop && state) {
+        console.log('✅ Auto-triggering market analysis...');
+        // Auto-analyze when both crop and state are selected
+        setTimeout(analyzeMarket, 500);
+      } else {
+        console.log('⚠️ Missing required fields for auto-analysis');
+      }
+    };
+
+    window.analyzeMarket = async function() {
+      const crop = document.getElementById('crop-select').value;
+      const state = document.getElementById('state-select').value;
+      const district = document.getElementById('district-select').value;
+
+      if (!crop || !state) {
+        alert('Please select both crop and state to analyze the market.');
+        return;
+      }
+
+      // Show loading
+      document.getElementById('loadingIndicator').classList.remove('hidden');
+      document.getElementById('analyzeBtn').disabled = true;
+      document.getElementById('analyzeBtn').textContent = 'Analyzing...';
+
+      try {
+        console.log('🔍 Making API call to market analysis service');
+
+        const requestData = {
+          crop: crop,
+          state: state,
+          district: district || null
+        };
+
+        console.log('📤 Request data:', requestData);
+
+        const response = await fetch('http://localhost:8003/analyze', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestData)
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('📥 Response data:', data);
+
+        currentAnalysisData = data;
+        displayResults(data);
+
+      } catch (error) {
+        console.error('❌ Market Analysis Error:', error);
+
+        // More specific error messages
+        let errorMessage = 'Failed to fetch market data';
+        if (error.message.includes('Failed to fetch')) {
+          errorMessage = 'Cannot connect to market analysis server. Please ensure the server is running on port 8003.';
+        } else if (error.message.includes('500')) {
+          errorMessage = 'Market analysis server error. Please check server logs.';
+        } else if (error.message.includes('timeout')) {
+          errorMessage = 'Request timed out. The AGMARKNET API might be slow.';
+        } else {
+          errorMessage = `Market analysis failed: ${error.message}`;
+        }
+
+        showError(errorMessage);
+      } finally {
+        // Hide loading
+        document.getElementById('loadingIndicator').classList.add('hidden');
+        document.getElementById('analyzeBtn').disabled = false;
+        document.getElementById('analyzeBtn').textContent = '📊 Analyze Market';
+      }
+    };
+
+    function displayResults(data) {
+      // Hide default message and show results
+      document.getElementById('defaultMessage').classList.add('hidden');
+      document.getElementById('resultsSection').classList.remove('hidden');
+
+      // Update price cards
+      document.getElementById('statePrice').textContent = `₹${data.state_avg_price.toLocaleString()} / quintal`;
+
+      if (data.district_avg_price) {
+        document.getElementById('districtPrice').textContent = `₹${data.district_avg_price.toLocaleString()} / quintal`;
+      } else {
+        document.getElementById('districtPrice').textContent = 'N/A';
+      }
+
+      // Update trend
+      const trendElement = document.getElementById('priceTrend');
+      const percentageElement = document.getElementById('trendPercentage');
+
+      let trendIcon = '';
+      let trendColor = '';
+
+      if (data.price_trend === 'increasing') {
+        trendIcon = '📈';
+        trendColor = 'text-green-600';
+      } else if (data.price_trend === 'decreasing') {
+        trendIcon = '📉';
+        trendColor = 'text-red-600';
+      } else {
+        trendIcon = '➡️';
+        trendColor = 'text-blue-600';
+      }
+
+      trendElement.innerHTML = `<span class="${trendColor}">${trendIcon} ${data.price_trend.charAt(0).toUpperCase() + data.price_trend.slice(1)}</span>`;
+      percentageElement.textContent = `${data.trend_percentage > 0 ? '+' : ''}${data.trend_percentage}% change`;
+
+      // Update recommendation
+      const recommendationElement = document.getElementById('recommendation');
+      let recommendationColor = 'bg-blue-500';
+
+      if (data.recommendation.includes('Sell immediately')) {
+        recommendationColor = 'bg-red-500';
+      } else if (data.recommendation.includes('Wait')) {
+        recommendationColor = 'bg-yellow-500';
+      } else if (data.recommendation.includes('Good time')) {
+        recommendationColor = 'bg-green-500';
+      }
+
+      recommendationElement.innerHTML = `<span class="inline-block text-white ${recommendationColor} text-sm px-3 py-1 rounded-full">${data.recommendation}</span>`;
+
+      // Update confidence
+      document.getElementById('confidence').textContent = `Confidence: ${Math.round(data.prediction_confidence * 100)}%`;
+
+      // Update enhanced analysis fields
+      if (data.risk_level) {
+        const riskElement = document.getElementById('riskLevel');
+        const riskColor = data.risk_level === 'Low' ? 'text-green-600' :
+                         data.risk_level === 'Medium' ? 'text-yellow-600' : 'text-red-600';
+        riskElement.className = `text-2xl font-bold mt-2 ${riskColor}`;
+        riskElement.textContent = data.risk_level;
+        document.getElementById('volatility').textContent = `Volatility: ${((data.price_volatility || 0.1) * 100).toFixed(1)}%`;
+      }
+
+      if (data.quality_grade) {
+        document.getElementById('qualityGrade').textContent = data.quality_grade;
+        document.getElementById('demandSupply').textContent = `D/S Ratio: ${(data.demand_supply_ratio || 1.0).toFixed(1)}`;
+      }
+
+      if (data.transportation_cost) {
+        document.getElementById('transportCost').textContent = `₹${data.transportation_cost.toFixed(0)}`;
+        document.getElementById('seasonalFactor').textContent = `Seasonal: ${(data.seasonal_factor || 1.0).toFixed(1)}x`;
+      }
+
+      if (data.best_selling_time) {
+        document.getElementById('bestTime').textContent = data.best_selling_time;
+        document.getElementById('storageRec').textContent = data.storage_recommendation || 'Store as per crop requirements';
+      }
+
+      // Update market details
+      if (data.market_data && data.market_data.length > 0) {
+        const marketDetailsDiv = document.getElementById('marketDetails');
+        marketDetailsDiv.innerHTML = data.market_data.map(market => `
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <h5 class="font-semibold text-gray-800 mb-2">${market.market}</h5>
+            <div class="grid grid-cols-2 gap-2 text-sm">
+              <div><strong>Modal Price:</strong> ₹${market.modal_price}</div>
+              <div><strong>District:</strong> ${market.district}</div>
+              <div><strong>Min Price:</strong> ₹${market.min_price}</div>
+              <div><strong>Max Price:</strong> ₹${market.max_price}</div>
+            </div>
+            <div class="mt-2 text-xs text-gray-600">
+              Arrival: ${market.arrival_date}
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Update price trend chart
+      updatePriceChart(data);
+    }
+
+    let priceChart = null;
+
+    function updatePriceChart(data) {
+      const ctx = document.getElementById('priceChart').getContext('2d');
+
+      // Destroy existing chart if it exists
+      if (priceChart) {
+        priceChart.destroy();
+      }
+
+      // Generate sample price data based on trend
+      const labels = [];
+      const prices = [];
+      const basePrice = data.state_avg_price;
+      const trendPercentage = data.trend_percentage;
+
+      // Generate 7 days of sample data
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+
+        // Calculate price based on trend
+        let price = basePrice;
+        if (data.price_trend === 'increasing') {
+          price = basePrice - (trendPercentage / 100 * basePrice * (i / 6));
+        } else if (data.price_trend === 'decreasing') {
+          price = basePrice + (Math.abs(trendPercentage) / 100 * basePrice * (i / 6));
+        } else {
+          // Stable with minor fluctuations
+          price = basePrice + (Math.random() - 0.5) * (basePrice * 0.05);
+        }
+
+        prices.push(Math.round(price));
+      }
+
+      // Determine chart colors based on trend
+      let borderColor = '#4caf50'; // Green for stable
+      let backgroundColor = 'rgba(76, 175, 80, 0.1)';
+
+      if (data.price_trend === 'increasing') {
+        borderColor = '#2196f3'; // Blue for increasing
+        backgroundColor = 'rgba(33, 150, 243, 0.1)';
+      } else if (data.price_trend === 'decreasing') {
+        borderColor = '#f44336'; // Red for decreasing
+        backgroundColor = 'rgba(244, 67, 54, 0.1)';
+      }
+
+      priceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: `${data.crop.charAt(0).toUpperCase() + data.crop.slice(1)} Price (₹/quintal)`,
+            data: prices,
+            fill: true,
+            backgroundColor: backgroundColor,
+            borderColor: borderColor,
+            borderWidth: 3,
+            tension: 0.4,
+            pointBackgroundColor: borderColor,
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 6,
+            pointHoverRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                font: {
+                  size: 14,
+                  weight: 'bold'
+                }
+              }
+            },
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              titleColor: '#fff',
+              bodyColor: '#fff',
+              borderColor: borderColor,
+              borderWidth: 1,
+              callbacks: {
+                label: function(context) {
+                  return `Price: ₹${context.parsed.y.toLocaleString()}`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              grid: {
+                color: 'rgba(0, 0, 0, 0.1)'
+              },
+              ticks: {
+                callback: function(value) {
+                  return '₹' + value.toLocaleString();
+                },
+                font: {
+                  size: 12
+                }
+              },
+              title: {
+                display: true,
+                text: 'Price (₹/quintal)',
+                font: {
+                  size: 14,
+                  weight: 'bold'
+                }
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              },
+              ticks: {
+                font: {
+                  size: 12
+                }
+              },
+              title: {
+                display: true,
+                text: 'Date',
+                font: {
+                  size: 14,
+                  weight: 'bold'
+                }
+              }
+            }
+          },
+          interaction: {
+            mode: 'nearest',
+            axis: 'x',
+            intersect: false
+          }
+        }
+      });
+    }
+
+    function showError(message) {
+      // Show error in a user-friendly way
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+      errorDiv.innerHTML = `
+        <div class="flex items-center">
+          <span class="mr-2">❌</span>
+          <span>${message}</span>
+          <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">×</button>
+        </div>
+      `;
+      document.body.appendChild(errorDiv);
+
+      // Auto-remove after 5 seconds
+      setTimeout(() => {
+        if (errorDiv.parentElement) {
+          errorDiv.remove();
+        }
+      }, 5000);
+    }
+
+    function downloadPDF() {
+      if (!currentAnalysisData) {
+        alert('Please analyze market data first before downloading the report.');
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      // Colors
+      const primaryColor = [46, 125, 50]; // Green
+      const secondaryColor = [76, 175, 80]; // Light Green
+      const textColor = [33, 33, 33]; // Dark Gray
+      const lightGray = [128, 128, 128];
+      const accentColor = [255, 193, 7]; // Amber
+
+      // Header Section with gradient effect
+      doc.setFillColor(...primaryColor);
+      doc.rect(0, 0, 210, 40, 'F');
+
+      // Add subtle gradient effect
+      doc.setFillColor(46, 125, 50, 0.8);
+      doc.rect(0, 30, 210, 10, 'F');
+
+      // Company Title
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(28);
+      doc.setFont('helvetica', 'bold');
+      doc.text("AgroConnect", 20, 22);
+
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.text("Smart Agriculture Market Analysis", 20, 30);
+
+      // Report Date in header
+      doc.setFontSize(10);
+      doc.text(`Report Generated: ${new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      })} at ${new Date().toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit'
+      })}`, 20, 36);
+
+      // Reset text color
+      doc.setTextColor(...textColor);
+
+      // Analysis Summary Section
+      let yPos = 55;
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...primaryColor);
+      doc.text("MARKET ANALYSIS SUMMARY", 20, yPos);
+
+      // Underline
+      doc.setDrawColor(...primaryColor);
+      doc.setLineWidth(1);
+      doc.line(20, yPos + 2, 120, yPos + 2);
+
+      yPos += 15;
+      doc.setTextColor(...textColor);
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+
+      // Create a clean info grid
+      const cropName = currentAnalysisData.crop.charAt(0).toUpperCase() + currentAnalysisData.crop.slice(1);
+      const stateName = currentAnalysisData.state.charAt(0).toUpperCase() + currentAnalysisData.state.slice(1);
+      const districtName = currentAnalysisData.district ?
+        currentAnalysisData.district.charAt(0).toUpperCase() + currentAnalysisData.district.slice(1) : 'All Districts';
+
+      // Info boxes
+      doc.setFont('helvetica', 'bold');
+      doc.text("Commodity:", 20, yPos);
+      doc.setFont('helvetica', 'normal');
+      doc.text(cropName, 50, yPos);
+
+      doc.setFont('helvetica', 'bold');
+      doc.text("State:", 120, yPos);
+      doc.setFont('helvetica', 'normal');
+      doc.text(stateName, 140, yPos);
+
+      yPos += 8;
+      doc.setFont('helvetica', 'bold');
+      doc.text("District:", 20, yPos);
+      doc.setFont('helvetica', 'normal');
+      doc.text(districtName, 50, yPos);
+
+      doc.setFont('helvetica', 'bold');
+      doc.text("Report Date:", 120, yPos);
+      doc.setFont('helvetica', 'normal');
+      doc.text(new Date().toLocaleDateString('en-US'), 155, yPos);
+
+      // Price Information Section
+      yPos += 25;
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...primaryColor);
+      doc.text("CURRENT MARKET PRICES", 20, yPos);
+
+      // Underline
+      doc.setDrawColor(...primaryColor);
+      doc.setLineWidth(1);
+      doc.line(20, yPos + 2, 130, yPos + 2);
+
+      yPos += 20;
+
+      // State Price Card
+      doc.setFillColor(248, 255, 248);
+      doc.roundedRect(20, yPos - 5, 80, 30, 3, 3, 'F');
+      doc.setDrawColor(...secondaryColor);
+      doc.setLineWidth(0.5);
+      doc.roundedRect(20, yPos - 5, 80, 30, 3, 3, 'S');
+
+      doc.setTextColor(...textColor);
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text("STATE AVERAGE", 25, yPos + 3);
+
+      doc.setFontSize(16);
+      doc.setTextColor(...primaryColor);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Rs. ${currentAnalysisData.state_avg_price.toLocaleString()}`, 25, yPos + 12);
+
+      doc.setFontSize(9);
+      doc.setTextColor(...lightGray);
+      doc.setFont('helvetica', 'normal');
+      doc.text("per quintal", 25, yPos + 20);
+
+      // District Price Card (if available)
+      if (currentAnalysisData.district_avg_price) {
+        doc.setFillColor(248, 255, 248);
+        doc.roundedRect(110, yPos - 5, 80, 30, 3, 3, 'F');
+        doc.setDrawColor(...secondaryColor);
+        doc.setLineWidth(0.5);
+        doc.roundedRect(110, yPos - 5, 80, 30, 3, 3, 'S');
+
+        doc.setTextColor(...textColor);
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.text("DISTRICT AVERAGE", 115, yPos + 3);
+
+        doc.setFontSize(16);
+        doc.setTextColor(...primaryColor);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Rs. ${currentAnalysisData.district_avg_price.toLocaleString()}`, 115, yPos + 12);
+
+        doc.setFontSize(9);
+        doc.setTextColor(...lightGray);
+        doc.setFont('helvetica', 'normal');
+        doc.text("per quintal", 115, yPos + 20);
+      }
+
+      // Trend Analysis Section
+      yPos += 45;
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...primaryColor);
+      doc.text("PRICE TREND ANALYSIS", 20, yPos);
+
+      // Underline
+      doc.setDrawColor(...primaryColor);
+      doc.setLineWidth(1);
+      doc.line(20, yPos + 2, 125, yPos + 2);
+
+      yPos += 20;
+
+      // Determine trend colors and indicators
+      let trendColor = primaryColor;
+      let trendBgColor = [232, 245, 233];
+      let trendText = "STABLE";
+      let trendSymbol = "→";
+
+      if (currentAnalysisData.price_trend === 'increasing') {
+        trendColor = [33, 150, 243]; // Blue
+        trendBgColor = [227, 242, 253];
+        trendText = "INCREASING";
+        trendSymbol = "↗";
+      } else if (currentAnalysisData.price_trend === 'decreasing') {
+        trendColor = [244, 67, 54]; // Red
+        trendBgColor = [255, 235, 238];
+        trendText = "DECREASING";
+        trendSymbol = "↘";
+      }
+
+      // Trend card
+      doc.setFillColor(...trendBgColor);
+      doc.roundedRect(20, yPos - 5, 170, 25, 3, 3, 'F');
+      doc.setDrawColor(...trendColor);
+      doc.setLineWidth(1);
+      doc.roundedRect(20, yPos - 5, 170, 25, 3, 3, 'S');
+
+      // Trend symbol
+      doc.setTextColor(...trendColor);
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'bold');
+      doc.text(trendSymbol, 30, yPos + 8);
+
+      // Trend text
+      doc.setFontSize(14);
+      doc.text(`PRICE TREND: ${trendText}`, 45, yPos + 5);
+
+      // Percentage
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      const percentageText = `${currentAnalysisData.trend_percentage > 0 ? '+' : ''}${currentAnalysisData.trend_percentage}%`;
+      doc.text(percentageText, 45, yPos + 15);
+
+      // AI Recommendation Section
+      yPos += 40;
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...primaryColor);
+      doc.text("AI RECOMMENDATION", 20, yPos);
+
+      // Underline
+      doc.setDrawColor(...primaryColor);
+      doc.setLineWidth(1);
+      doc.line(20, yPos + 2, 115, yPos + 2);
+
+      yPos += 20;
+
+      // Recommendation card
+      doc.setFillColor(255, 252, 240);
+      doc.roundedRect(20, yPos - 5, 170, 35, 3, 3, 'F');
+      doc.setDrawColor(...accentColor);
+      doc.setLineWidth(1);
+      doc.roundedRect(20, yPos - 5, 170, 35, 3, 3, 'S');
+
+      // Recommendation icon
+      doc.setTextColor(...accentColor);
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text("★", 30, yPos + 8);
+
+      // Recommendation text
+      doc.setTextColor(...textColor);
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text("RECOMMENDATION:", 40, yPos + 5);
+
+      doc.setFont('helvetica', 'normal');
+      const recommendation = currentAnalysisData.recommendation;
+      const splitRecommendation = doc.splitTextToSize(recommendation, 140);
+      doc.text(splitRecommendation, 40, yPos + 15);
+
+      // Confidence Section
+      yPos += 50;
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...primaryColor);
+      doc.text("PREDICTION CONFIDENCE", 20, yPos);
+
+      yPos += 10;
+      const confidencePercent = Math.round(currentAnalysisData.prediction_confidence * 100);
+
+      // Confidence bar background
+      doc.setFillColor(240, 240, 240);
+      doc.roundedRect(20, yPos, 120, 8, 2, 2, 'F');
+
+      // Confidence bar fill
+      const confidenceWidth = (confidencePercent / 100) * 120;
+      let confidenceColor = secondaryColor;
+      if (confidencePercent >= 80) confidenceColor = [76, 175, 80]; // High confidence - green
+      else if (confidencePercent >= 60) confidenceColor = [255, 193, 7]; // Medium confidence - amber
+      else confidenceColor = [244, 67, 54]; // Low confidence - red
+
+      doc.setFillColor(...confidenceColor);
+      doc.roundedRect(20, yPos, confidenceWidth, 8, 2, 2, 'F');
+
+      // Confidence percentage text
+      doc.setTextColor(...textColor);
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${confidencePercent}%`, 150, yPos + 6);
+
+      // Additional Information Section
+      yPos += 25;
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...primaryColor);
+      doc.text("DATA SOURCE & METHODOLOGY", 20, yPos);
+
+      yPos += 10;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...textColor);
+      doc.text("• Market data sourced from AGMARKNET API (Government of India)", 20, yPos);
+      doc.text("• AI-powered trend analysis using statistical modeling", 20, yPos + 7);
+      doc.text("• Recommendations based on historical price patterns", 20, yPos + 14);
+
+      // Footer Section
+      yPos = 270;
+      doc.setFillColor(...primaryColor);
+      doc.rect(0, yPos, 210, 27, 'F');
+
+      // Footer content
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text("AgroConnect", 20, yPos + 8);
+      doc.setFont('helvetica', 'normal');
+      doc.text("Smart Agriculture Solutions", 20, yPos + 15);
+
+      doc.setFontSize(9);
+      doc.text("Web: www.agroconnect.in", 20, yPos + 22);
+
+      // Right side footer
+      doc.setFontSize(9);
+      doc.text("Email: support@agroconnect.in", 120, yPos + 8);
+      doc.text("Phone: +91 98765 43210", 120, yPos + 15);
+      doc.text(`Report ID: AC-${Date.now().toString().slice(-8)}`, 120, yPos + 22);
+
+      // Save with professional filename
+      const timestamp = new Date().toISOString().slice(0, 10);
+      const cropNameFile = currentAnalysisData.crop.replace(/\s+/g, '_');
+      const stateNameFile = currentAnalysisData.state.replace(/\s+/g, '_');
+      const filename = `AgroConnect_Market_Report_${cropNameFile}_${stateNameFile}_${timestamp}.pdf`;
+      doc.save(filename);
+    }
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🌾 Market Analysis page loaded');
+      console.log('🔧 Functions available:', {
+        updateAnalysis: typeof updateAnalysis,
+        updateDistricts: typeof updateDistricts,
+        analyzeMarket: typeof analyzeMarket
+      });
+
+      // Add event listeners for auto-analysis
+      try {
+        document.getElementById('crop-select').addEventListener('change', window.updateAnalysis);
+        document.getElementById('state-select').addEventListener('change', function() {
+          window.updateDistricts();
+          window.updateAnalysis();
+        });
+        document.getElementById('district-select').addEventListener('change', window.updateAnalysis);
+        console.log('✅ Event listeners added successfully');
+      } catch (error) {
+        console.error('❌ Error adding event listeners:', error);
+      }
+    });
+  </script>
+
+  <!-- Authentication -->
+  <script src="../auth.js"></script>
+
+  <!-- AgroBot Chat Widget -->
+  <script src="../agrobot-chat.js"></script>
+
+</body>
+</html>

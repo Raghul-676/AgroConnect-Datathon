@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Location Test</title>
+</head>
+<body>
+    <h1>Location Detection Test</h1>
+    <p>Location: <span id="location">Detecting...</span></p>
+    <button onclick="getLocation()">Get Location</button>
+    
+    <script>
+        async function getLocation() {
+            try {
+                const position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject);
+                });
+                
+                const { latitude, longitude } = position.coords;
+                console.log('Coordinates:', latitude, longitude);
+                
+                // Test reverse geocoding
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`,
+                    {
+                        headers: {
+                            'User-Agent': 'IrrigationCalculator/1.0'
+                        }
+                    }
+                );
+                
+                const data = await response.json();
+                console.log('Geocoding data:', data);
+                
+                const address = data.address || {};
+                const city = address.city || address.town || address.village || address.county || '';
+                const state = address.state || address.region || '';
+                const country = address.country || '';
+                
+                let locationParts = [];
+                if (city) locationParts.push(city);
+                if (state) locationParts.push(state);
+                if (country) locationParts.push(country);
+                
+                const locationName = locationParts.join(', ') || 'Unknown Location';
+                document.getElementById('location').textContent = locationName;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('location').textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        // Auto-run on page load
+        window.addEventListener('load', getLocation);
+    </script>
+</body>
+</html>

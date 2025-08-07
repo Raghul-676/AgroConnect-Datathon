@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Irrigation Calculator | AgroConnect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .soil-brown { background-color: #7B5E57; }
+    .soil-brown-light { background-color: #A87C6D; }
+
+    /* Custom styles for date input */
+    input[name="lastIrrigation"] {
+      font-family: monospace;
+      letter-spacing: 1px;
+      font-size: 16px;
+    }
+    input[name="lastIrrigation"]:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+
+  </style>
+</head>
+<body class="bg-green-50 text-gray-800">
+
+ <!-- ✅ Navbar -->
+<nav class="bg-green-700 text-white py-4 shadow-md">
+  <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold">🌿 AgroConnect</h1>
+    <a href="../dashboard.html" class="text-sm underline hover:text-green-200 transition">Return Home</a>
+  </div>
+</nav>
+
+
+  <!-- ✅ Header -->
+  <header class="bg-white shadow-sm py-8">
+    <div class="max-w-7xl mx-auto px-6 text-center">
+      <h2 class="text-3xl font-bold text-green-800 mb-2">Irrigation Calculation Portal</h2>
+      <p class="text-gray-600">Get smart irrigation recommendations based on crop, soil, weather and farm size.</p>
+    </div>
+  </header>
+
+  <!-- ✅ Input Form -->
+  <main class="max-w-4xl mx-auto px-6 py-10">
+    <form id="irrigation-form" class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white shadow-md p-6 rounded-lg border">
+
+      <div>
+        <label class="block font-medium mb-1">Farm Size</label>
+        <input type="number" name="farmSize" step="0.01" min="0.01" class="w-full border p-3 rounded" placeholder="Enter value (e.g., 2.5)">
+      </div>
+
+      <div>
+        <label class="block font-medium mb-1">Unit</label>
+        <select name="unit" class="w-full border p-3 rounded">
+          <option value="acres">Acres</option>
+          <option value="hectares">Hectares</option>
+          <option value="sqmeters">Square Meters</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block font-medium mb-1">Crop Type</label>
+        <select name="crop" class="w-full border p-3 rounded">
+          <option value="rice">Rice</option>
+          <option value="wheat">Wheat</option>
+          <option value="sugarcane">Sugarcane</option>
+          <option value="cotton">Cotton</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block font-medium mb-1">Soil Type</label>
+        <select name="soil" class="w-full border p-3 rounded">
+          <option value="sandy">Sandy</option>
+          <option value="loamy">Loamy</option>
+          <option value="clay">Clay</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block font-medium mb-1">Irrigation Method</label>
+        <select name="method" class="w-full border p-3 rounded">
+          <option value="drip">Drip</option>
+          <option value="sprinkler">Sprinkler</option>
+          <option value="flood">Flood</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block font-medium mb-1">Soil Bulk Density (g/cm³)</label>
+        <input type="number" name="bulkDensity" id="bulkDensity" class="w-full border p-3 rounded"
+               step="0.01" min="0.8" max="2.0" required
+               placeholder="e.g., 1.3"
+               title="Soil bulk density in g/cm³ (typically 0.8-2.0)">
+        <div class="text-xs text-gray-500 mt-1">
+          Typical values: Sandy (1.2-1.8), Loamy (1.1-1.5), Clay (1.0-1.4)
+          <button type="button" onclick="suggestBulkDensity()" class="ml-2 text-xs bg-blue-100 px-2 py-1 rounded hover:bg-blue-200">💡 Auto-suggest</button>
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-medium mb-1">Last Irrigation Date (YYYY-MM-DD)</label>
+        <input type="text" name="lastIrrigation" class="w-full border p-3 rounded" required
+               value="2025-08-04"
+               pattern="\d{4}-\d{2}-\d{2}"
+               placeholder="2025-08-04"
+               maxlength="10"
+               title="Please enter date in YYYY-MM-DD format"
+               oninput="formatDateInput(this)">
+      </div>
+
+      <div class="col-span-2">
+        <label class="block font-medium mb-1">📍 Location (Auto-detected)</label>
+        <div class="flex gap-2">
+          <input type="text" id="manual-location" class="flex-1 border p-3 rounded"
+                 placeholder="Leave empty to use auto-detected location"
+                 title="Override auto-detected location if needed"
+                 onchange="updateWeatherForManualLocation()"
+                 onblur="updateWeatherForManualLocation()">
+          <button type="button" id="detect-location-btn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" title="Detect my location">
+            📍 Detect
+          </button>
+        </div>
+        <div class="text-xs text-gray-500 mt-1">
+          Current: <span id="location-display">Detecting...</span>
+          <button type="button" onclick="testLocationDetection()" class="ml-2 text-xs bg-gray-200 px-2 py-1 rounded">🧪 Test</button>
+        </div>
+      </div>
+
+      <div class="col-span-2">
+        <button type="submit" class="w-full bg-green-700 text-white py-3 rounded hover:bg-green-800">Calculate Irrigation</button>
+      </div>
+    </form>
+
+    <!-- ✅ Weather Section (API placeholder) -->
+    <section class="mt-10 bg-blue-50 border p-4 rounded-lg">
+      <h3 class="text-lg font-semibold text-blue-900 mb-2">📡 Live Weather (API Fetched)</h3>
+      <div id="weatherInfo" class="text-sm text-gray-700">
+        <div class="flex items-center mb-2">
+          <span>📍 Location: </span>
+          <span id="current-location" class="ml-1 font-medium">Detecting your location...</span>
+          <button id="refresh-location" class="ml-2 text-blue-600 hover:text-blue-800 text-xs px-2 py-1 border rounded" title="Refresh location">🔄 Refresh</button>
+        </div>
+        Temperature: <span id="temp">--</span>°C<br/>
+        Rain Forecast: <span id="rain">--</span> mm
+      </div>
+    </section>
+
+    <!-- ✅ Output -->
+    <section class="mt-10 hidden" id="result-section">
+      <div class="bg-green-100 border-l-4 border-green-600 p-6 rounded-lg shadow">
+        <h3 class="text-xl font-bold text-green-800 mb-4">💧 Irrigation Recommendation</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div class="bg-white p-3 rounded">
+            <p class="text-sm text-gray-600">Next Irrigation</p>
+            <p class="text-lg font-semibold text-green-700" id="nextDate">--</p>
+          </div>
+          <div class="bg-white p-3 rounded">
+            <p class="text-sm text-gray-600">Total Water Required</p>
+            <p class="text-lg font-semibold text-blue-700"><span id="waterLiters">--</span> liters</p>
+          </div>
+          <div class="bg-white p-3 rounded">
+            <p class="text-sm text-gray-600">Water per Square Meter</p>
+            <p class="text-lg font-semibold text-purple-700"><span id="waterPerSqm">--</span> L/m²</p>
+          </div>
+          <div class="bg-white p-3 rounded">
+            <p class="text-sm text-gray-600">Irrigation Efficiency</p>
+            <p class="text-lg font-semibold text-orange-700"><span id="efficiency">--</span>%</p>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded mb-4">
+          <h4 class="font-semibold text-gray-800 mb-2">📋 Recommendations:</h4>
+          <p class="text-gray-700" id="tip">--</p>
+        </div>
+
+        <div class="bg-white p-4 rounded">
+          <h4 class="font-semibold text-gray-800 mb-2">📊 Irrigation Schedule:</h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+            <div>
+              <span class="text-gray-600">Priority:</span>
+              <span class="font-medium" id="priority">--</span>
+            </div>
+            <div>
+              <span class="text-gray-600">Frequency:</span>
+              <span class="font-medium" id="frequency">--</span>
+            </div>
+            <div>
+              <span class="text-gray-600">Days Since Last:</span>
+              <span class="font-medium" id="daysSince">--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ✅ Footer -->
+  <footer class="soil-brown text-white mt-16">
+    <div class="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div>
+        <h4 class="text-lg font-semibold mb-3">About AgroConnect</h4>
+        <p class="text-sm">An AI-powered farming platform helping Indian farmers plan irrigation and increase productivity.</p>
+      </div>
+      <div>
+        <h4 class="text-lg font-semibold mb-3">Quick Links</h4>
+        <ul class="text-sm space-y-1">
+          <li><a href="#" class="hover:underline">Home</a></li>
+          <li><a href="#" class="hover:underline">Schemes</a></li>
+          <li><a href="#" class="hover:underline">Support</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-lg font-semibold mb-3">Contact</h4>
+        <p class="text-sm">📧 support@agroconnect.in</p>
+        <p class="text-sm">📍 Tamil Nadu, India</p>
+      </div>
+    </div>
+    <div class="soil-brown-light text-center py-3 text-sm">
+      © 2025 AgroConnect. All rights reserved.
+    </div>
+  </footer>
+
+  <!-- ✅ JS: Backend Integration -->
+  <script>
+    // Global variable to store current location
+    let currentLocationName = null; // No default - force actual detection
+
+    // Get user's current location
+    async function getCurrentLocation() {
+      return new Promise((resolve, reject) => {
+        console.log('Checking geolocation support...');
+
+        if (!navigator.geolocation) {
+          console.error('Geolocation not supported');
+          reject(new Error('Geolocation is not supported by this browser'));
+          return;
+        }
+
+        console.log('Geolocation supported, requesting position...');
+
+        const options = {
+          enableHighAccuracy: true,
+          timeout: 15000, // Increased timeout
+          maximumAge: 60000 // 1 minute cache
+        };
+
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            console.log('Position obtained successfully:', position);
+            resolve(position);
+          },
+          (error) => {
+            console.error('Geolocation error:', error);
+            reject(error);
+          },
+          options
+        );
+      });
+    }
+
+    // Convert coordinates to location name using reverse geocoding
+    async function reverseGeocode(latitude, longitude) {
+      try {
+        console.log(`🌍 Reverse geocoding coordinates: ${latitude}, ${longitude}`);
+
+        // Using OpenStreetMap Nominatim API (free, no API key required)
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`;
+        console.log(`🌐 Geocoding URL: ${url}`);
+
+        const response = await fetch(url, {
+          headers: {
+            'User-Agent': 'IrrigationCalculator/1.0'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`Geocoding failed with status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('🗺️ Geocoding response:', data);
+
+        // Extract district/city, state, country with priority for district
+        const address = data.address || {};
+        const district = address.state_district || address.county || '';
+        const city = address.city || address.town || address.village || '';
+        const state = address.state || address.region || '';
+        const country = address.country || '';
+
+        console.log('📍 Address components:', { district, city, state, country });
+
+        // Format location string - prioritize district, state format
+        let locationParts = [];
+
+        // Use district if available, otherwise use city
+        const primaryLocation = district || city;
+        if (primaryLocation) locationParts.push(primaryLocation);
+        if (state) locationParts.push(state);
+        if (country) locationParts.push(country);
+
+        const locationString = locationParts.join(', ') || 'Unknown Location';
+        console.log('🎯 Final location string:', locationString);
+
+        return locationString;
+
+      } catch (error) {
+        console.error('❌ Reverse geocoding error:', error);
+        return null;
+      }
+    }
+
+    // Update location display and fetch weather
+    async function updateLocation() {
+      const locationElement = document.getElementById('current-location');
+      const refreshButton = document.getElementById('refresh-location');
+
+      try {
+        locationElement.textContent = 'Getting your location...';
+        if (refreshButton) refreshButton.disabled = true;
+
+        console.log('Starting location detection...');
+
+        // Get coordinates
+        const position = await getCurrentLocation();
+        const { latitude, longitude } = position.coords;
+
+        console.log('Got coordinates:', latitude, longitude);
+
+        // Convert to location name
+        const locationName = await reverseGeocode(latitude, longitude);
+
+        if (locationName) {
+          currentLocationName = locationName;
+          locationElement.textContent = locationName;
+
+          // Update form location display
+          const locationDisplay = document.getElementById('location-display');
+          if (locationDisplay) {
+            locationDisplay.textContent = locationName + ' (detected)';
+          }
+
+          // Also populate the manual location input with detected location
+          const manualLocationInput = document.getElementById('manual-location');
+          if (manualLocationInput) {
+            manualLocationInput.value = locationName;
+            manualLocationInput.placeholder = locationName;
+          }
+
+          console.log('✅ Location detected and set:', locationName);
+          console.log('✅ currentLocationName is now:', currentLocationName);
+
+          // Fetch weather for the new location
+          await loadWeatherData(locationName);
+        } else {
+          throw new Error('Could not determine location name');
+        }
+
+      } catch (error) {
+        console.error('❌ Location detection failed:', error);
+
+        // Show more specific error messages
+        let errorMsg = 'Location detection failed';
+        if (error.code === 1) {
+          errorMsg = 'Location access denied. Please enable location services and try again.';
+        } else if (error.code === 2) {
+          errorMsg = 'Location unavailable. Please check your GPS/internet connection.';
+        } else if (error.code === 3) {
+          errorMsg = 'Location timeout. Please try again.';
+        } else if (error.message) {
+          errorMsg = `Location error: ${error.message}`;
+        }
+
+        locationElement.textContent = errorMsg;
+
+        // Update form display too
+        const locationDisplay = document.getElementById('location-display');
+        if (locationDisplay) {
+          locationDisplay.textContent = 'Location detection failed - please enter manually';
+        }
+
+        // Don't load any weather data if location detection fails
+        document.getElementById('temp').innerText = '--';
+        document.getElementById('rain').innerText = '--';
+
+      } finally {
+        if (refreshButton) refreshButton.disabled = false;
+      }
+    }
+
+    // Load weather data for a specific location
+    async function loadWeatherData(location = currentLocationName) {
+      try {
+        console.log('Loading weather data for:', location);
+        const weatherUrl = `http://localhost:8001/api/weather/${encodeURIComponent(location)}`;
+        console.log('Fetching from:', weatherUrl);
+
+        const weatherRes = await fetch(weatherUrl);
+        console.log('Weather response status:', weatherRes.status);
+
+        if (!weatherRes.ok) {
+          const errorText = await weatherRes.text();
+          console.error('Weather API error response:', errorText);
+          throw new Error(`Weather API error: ${weatherRes.status} - ${errorText}`);
+        }
+
+        const weatherData = await weatherRes.json();
+        console.log('Weather data:', weatherData);
+
+        // Update weather display
+        document.getElementById('temp').innerText = Math.round(weatherData.temperature);
+        document.getElementById('rain').innerText = Math.round(weatherData.rainfall_forecast_3day);
+
+        // Update location display in weather section
+        const currentLocationSpan = document.getElementById('current-location');
+        if (currentLocationSpan) {
+          currentLocationSpan.textContent = weatherData.location || location;
+        }
+
+      } catch (error) {
+        console.error('Error loading weather data:', error);
+        document.getElementById('temp').innerText = '--';
+        document.getElementById('rain').innerText = '--';
+
+        // Show error in location display
+        const currentLocationSpan = document.getElementById('current-location');
+        if (currentLocationSpan) {
+          currentLocationSpan.textContent = 'Location unavailable. Using default location.';
+        }
+      }
+    }
+
+    // Update weather when manual location is entered
+    async function updateWeatherForManualLocation() {
+      const manualLocationInput = document.getElementById('manual-location');
+      if (manualLocationInput && manualLocationInput.value.trim()) {
+        const location = manualLocationInput.value.trim();
+        console.log('Manual location entered:', location);
+
+        // Update the location display
+        const locationDisplay = document.getElementById('location-display');
+        if (locationDisplay) {
+          locationDisplay.textContent = location + ' (manual)';
+        }
+
+        // Load weather for this location
+        await loadWeatherData(location);
+      }
+    }
+
+    // Auto-suggest bulk density based on soil type
+    function suggestBulkDensity() {
+      const soilSelect = document.querySelector('select[name="soil"]');
+      const bulkDensityInput = document.getElementById('bulkDensity');
+
+      if (!soilSelect || !bulkDensityInput) {
+        alert('Please select a soil type first');
+        return;
+      }
+
+      const soilType = soilSelect.value;
+      let suggestedValue = '';
+      let explanation = '';
+
+      switch (soilType) {
+        case 'sandy':
+          suggestedValue = '1.5';
+          explanation = 'Sandy soils typically have higher bulk density (1.2-1.8 g/cm³) due to larger particles and less organic matter.';
+          break;
+        case 'loamy':
+          suggestedValue = '1.3';
+          explanation = 'Loamy soils have moderate bulk density (1.1-1.5 g/cm³) with good structure and organic matter content.';
+          break;
+        case 'clay':
+          suggestedValue = '1.2';
+          explanation = 'Clay soils typically have lower bulk density (1.0-1.4 g/cm³) due to smaller particles and higher porosity.';
+          break;
+        default:
+          alert('Please select a soil type first');
+          return;
+      }
+
+      bulkDensityInput.value = suggestedValue;
+      alert(`💡 Suggested bulk density for ${soilType} soil: ${suggestedValue} g/cm³\n\n${explanation}`);
+    }
+
+    // Test function for debugging location detection
+    async function testLocationDetection() {
+      console.log('🧪 Testing location detection...');
+
+      try {
+        // Test geolocation support
+        if (!navigator.geolocation) {
+          alert('❌ Geolocation not supported by this browser');
+          return;
+        }
+
+        console.log('✅ Geolocation supported');
+        alert('✅ Geolocation is supported. Requesting your location...');
+
+        // Test getting position with high accuracy
+        const position = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(
+            resolve,
+            reject,
+            {
+              enableHighAccuracy: true,
+              timeout: 10000,
+              maximumAge: 0 // Don't use cached location
+            }
+          );
+        });
+
+        const { latitude, longitude, accuracy } = position.coords;
+        console.log('✅ Position obtained:', { latitude, longitude, accuracy });
+
+        alert(`✅ Your coordinates:\nLatitude: ${latitude}\nLongitude: ${longitude}\nAccuracy: ${accuracy}m`);
+
+        // Test reverse geocoding with multiple services
+        console.log('🌐 Testing reverse geocoding...');
+
+        // Try OpenStreetMap first
+        let locationName = await reverseGeocode(latitude, longitude);
+
+        if (locationName && !locationName.includes('Tamil Nadu')) {
+          alert(`✅ Location detected: ${locationName}`);
+          return locationName;
+        } else {
+          // Try alternative geocoding service
+          console.log('🔄 Trying alternative geocoding...');
+
+          try {
+            const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+            const data = await response.json();
+
+            const city = data.city || data.locality || '';
+            const state = data.principalSubdivision || '';
+            const country = data.countryName || '';
+
+            const altLocation = [city, state, country].filter(x => x).join(', ');
+
+            if (altLocation) {
+              alert(`✅ Alternative location: ${altLocation}`);
+              return altLocation;
+            }
+          } catch (e) {
+            console.error('Alternative geocoding failed:', e);
+          }
+
+          alert(`❌ Could not determine location name from coordinates.\nCoordinates: ${latitude}, ${longitude}`);
+        }
+
+      } catch (error) {
+        console.error('❌ Test failed:', error);
+
+        let errorMsg = 'Location detection failed';
+        if (error.code === 1) {
+          errorMsg = 'Location access denied. Please allow location access and try again.';
+        } else if (error.code === 2) {
+          errorMsg = 'Location unavailable. Please check your GPS and internet connection.';
+        } else if (error.code === 3) {
+          errorMsg = 'Location request timed out. Please try again.';
+        }
+
+        alert(`❌ ${errorMsg}\nError details: ${error.message}`);
+      }
+    }
+
+    // Format date input to YYYY-MM-DD as user types
+    function formatDateInput(input) {
+      let value = input.value.replace(/\D/g, ''); // Remove non-digits
+
+      if (value.length >= 4) {
+        value = value.substring(0, 4) + '-' + value.substring(4);
+      }
+      if (value.length >= 7) {
+        value = value.substring(0, 7) + '-' + value.substring(7, 9);
+      }
+
+      input.value = value;
+
+      // Validate the date
+      if (value.length === 10) {
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (dateRegex.test(value)) {
+          const date = new Date(value);
+          const isValid = date instanceof Date && !isNaN(date) && value === date.toISOString().split('T')[0];
+
+          if (isValid) {
+            input.style.borderColor = '#10b981'; // Green border for valid date
+          } else {
+            input.style.borderColor = '#ef4444'; // Red border for invalid date
+          }
+        }
+      } else {
+        input.style.borderColor = '#d1d5db'; // Default border
+      }
+    }
+    // Initialize location and weather on page load
+    window.addEventListener('load', async () => {
+      console.log('Page loaded, setting up location detection...');
+
+      // Set initial display
+      const locationDisplay = document.getElementById('location-display');
+      if (locationDisplay) {
+        locationDisplay.textContent = 'Click "📍 Detect" to detect your location';
+      }
+
+      const currentLocationSpan = document.getElementById('current-location');
+      if (currentLocationSpan) {
+        currentLocationSpan.textContent = 'Click "🔄 Refresh" to detect location';
+      }
+
+      // Set up refresh location button
+      const refreshBtn = document.getElementById('refresh-location');
+      if (refreshBtn) {
+        refreshBtn.addEventListener('click', updateLocation);
+      }
+
+      // Set up detect location button in form
+      const detectBtn = document.getElementById('detect-location-btn');
+      if (detectBtn) {
+        console.log('✅ Detect button found, adding event listener');
+        detectBtn.addEventListener('click', async (e) => {
+          e.preventDefault(); // Prevent form submission
+          console.log('🔍 Detect button clicked - starting location detection');
+
+          // Update button state
+          const originalText = detectBtn.textContent;
+          detectBtn.disabled = true;
+          detectBtn.textContent = '🔄 Detecting...';
+
+          try {
+            await updateLocation();
+          } finally {
+            // Reset button state
+            detectBtn.disabled = false;
+            detectBtn.textContent = originalText;
+          }
+        });
+      } else {
+        console.error('❌ Detect button not found!');
+      }
+
+      // Don't automatically detect location - wait for user action
+      console.log('✅ Page ready. Click "📍 Detect" to detect your location.');
+    });
+
+    document.getElementById('irrigation-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const form = e.target;
+      const submitButton = form.querySelector('button[type="submit"]');
+
+      // Show loading state
+      submitButton.disabled = true;
+      submitButton.textContent = 'Calculating...';
+
+      try {
+        // Date input should already be in YYYY-MM-DD format from HTML5 date input
+        const dateInput = form.lastIrrigation.value;
+
+        // Use manual location if provided, otherwise use detected location
+        const manualLocationInput = document.getElementById('manual-location');
+        const manualLocation = manualLocationInput ? manualLocationInput.value.trim() : '';
+        const locationToUse = manualLocation || currentLocationName;
+
+        console.log('Manual location input:', manualLocation);
+        console.log('Current detected location:', currentLocationName);
+        console.log('Final location to use:', locationToUse);
+
+        // Validate that we have a location
+        if (!locationToUse) {
+          alert('Please enter a location or click the "📍 Detect" button to detect your location.');
+          return;
+        }
+
+        const data = {
+          fieldSize: parseFloat(form.farmSize.value), // Backend expects fieldSize
+          unit: form.unit.value,
+          crop: form.crop.value,
+          soilType: form.soil.value, // Backend expects soilType
+          irrigationType: form.method.value, // Backend expects irrigationType
+          bulkDensity: parseFloat(form.bulkDensity.value),
+          lastIrrigation: dateInput, // HTML5 date input always returns YYYY-MM-DD
+          location: locationToUse // Use manual or detected location
+        };
+
+        console.log('Sending request with data:', data);
+
+        // Validate required fields
+        if (isNaN(data.fieldSize) || data.fieldSize <= 0) {
+          alert('Please enter a valid farm size');
+          return;
+        }
+
+        if (isNaN(data.bulkDensity) || data.bulkDensity < 0.8 || data.bulkDensity > 2.0) {
+          alert('Please enter a valid bulk density between 0.8 and 2.0 g/cm³');
+          return;
+        }
+
+        if (!dateInput) {
+          alert('Please select a date for last irrigation');
+          return;
+        }
+
+        // Validate YYYY-MM-DD format
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!dateRegex.test(data.lastIrrigation)) {
+          alert('Please enter date in YYYY-MM-DD format (e.g., 2025-08-04)');
+          return;
+        }
+
+        console.log('Date input (YYYY-MM-DD):', data.lastIrrigation);
+
+        // Send to ML backend
+        console.log('Sending request with data:', data);
+        const apiUrl = 'http://localhost:8001/api/calculate-irrigation';
+        console.log('Posting to:', apiUrl);
+
+        const res = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+
+        console.log('Response status:', res.status);
+        console.log('Response headers:', Object.fromEntries(res.headers.entries()));
+
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error('Error response:', errorText);
+          throw new Error(`HTTP error! status: ${res.status} - ${errorText}`);
+        }
+
+        const result = await res.json();
+        console.log('Success result:', result);
+
+        // Validate result structure
+        if (!result || !result.success) {
+          throw new Error(result?.error || 'Invalid response from irrigation service');
+        }
+
+        // Update weather display with fresh data (with fallbacks)
+        if (result.weatherInfo) {
+          document.getElementById('temp').innerText = Math.round(result.weatherInfo.temperature || 25);
+          document.getElementById('rain').innerText = Math.round(result.weatherInfo.rainfall_forecast_3day || 0);
+        }
+
+        // Display main results
+        document.getElementById('nextDate').innerText = result.nextIrrigationDate || 'Not available';
+        document.getElementById('waterLiters').innerText = Math.round(result.waterLiters || 0).toLocaleString();
+
+        // Display detailed water requirements
+        if (result.water_requirement) {
+          document.getElementById('waterPerSqm').innerText = (result.water_requirement.liters_per_sqm || 0).toFixed(1);
+        }
+
+        // Display efficiency information
+        if (result.efficiency) {
+          document.getElementById('efficiency').innerText = result.efficiency.efficiency_percent || '--';
+        }
+
+        // Display irrigation schedule
+        if (result.irrigation_schedule) {
+          document.getElementById('priority').innerText = result.irrigation_schedule.priority || '--';
+          document.getElementById('frequency').innerText = result.irrigation_schedule.frequency || '--';
+          document.getElementById('daysSince').innerText = result.irrigation_schedule.days_since_last || '--';
+        }
+
+        // Handle recommendations array - join them or take the first one
+        const tip = result.recommendations && result.recommendations.length > 0
+          ? result.recommendations.join('. ')
+          : result.tip || 'Follow standard irrigation practices';
+        document.getElementById('tip').innerText = tip;
+
+        document.getElementById('result-section').classList.remove('hidden');
+
+        // Scroll to results
+        document.getElementById('result-section').scrollIntoView({ behavior: 'smooth' });
+
+      } catch (error) {
+        console.error('Error calculating irrigation:', error);
+        let errorMessage = 'Error calculating irrigation. Please try again.';
+        if (error.message) {
+          errorMessage += '\nDetails: ' + error.message;
+        }
+        alert(errorMessage);
+      } finally {
+        // Reset button state
+        submitButton.disabled = false;
+        submitButton.textContent = 'Calculate Irrigation';
+      }
+    });
+  </script>
+
+  <!-- Authentication -->
+  <script src="../auth.js"></script>
+
+  <!-- AgroBot Chat Widget -->
+  <script src="../agrobot-chat.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profile Settings | AgroConnect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://unpkg.com/cropperjs/dist/cropper.min.css" rel="stylesheet"/>
+  <style>
+    .settings-card {
+      transition: all 0.3s ease;
+    }
+    .settings-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #2e7d32;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .success-message {
+      background: #d4edda;
+      color: #155724;
+      padding: 0.75rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .error-message {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 0.75rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      display: none;
+    }
+  </style>
+</head>
+<body class="bg-green-50 text-gray-800 font-sans">
+
+  <!-- Navbar -->
+  <nav class="bg-green-700 text-white px-6 py-4 flex justify-between items-center shadow-md">
+    <h1 class="text-xl font-bold">🌱 AgroConnect</h1>
+    <div class="flex space-x-3">
+      <a href="profile.html" class="text-sm bg-white text-green-700 px-4 py-2 rounded hover:bg-green-100 transition">
+        👤 Profile
+      </a>
+      <a href="dashboard.html" class="text-sm bg-green-600 text-white px-4 py-2 rounded hover:bg-green-800 transition">
+        🏠 Dashboard
+      </a>
+    </div>
+  </nav>
+
+  <!-- Settings Form -->
+  <div class="max-w-3xl mx-auto mt-10 bg-white p-8 rounded-lg shadow-xl settings-card">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-2xl font-semibold text-green-700">⚙️ Profile Settings</h2>
+      <span id="userStatus" class="text-sm text-gray-500">
+        <span class="loading"></span> Loading...
+      </span>
+    </div>
+
+    <div class="success-message" id="successMessage"></div>
+    <div class="error-message" id="errorMessage"></div>
+
+    <form id="settingsForm" onsubmit="saveSettings(event)">
+
+      <!-- Profile Picture Upload -->
+      <div class="mb-6 text-center">
+        <img id="profilePreview" src="https://www.w3schools.com/howto/img_avatar.png" alt="Profile" class="w-24 h-24 rounded-full mx-auto border-4 border-green-600 object-cover"/>
+        <input id="imageInput" type="file" accept="image/*" class="mt-2 text-sm text-gray-600 block mx-auto" />
+      </div>
+
+      <!-- Crop Modal -->
+      <div id="cropModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-4 rounded-lg shadow-lg max-w-xl w-full">
+          <h3 class="text-lg font-semibold mb-2 text-center">Crop Your Profile Picture</h3>
+          <div class="w-full h-[300px]">
+            <img id="cropImage" class="max-h-[300px] mx-auto" />
+          </div>
+          <div class="flex justify-end mt-4 gap-4">
+            <button type="button" onclick="cancelCrop()" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
+            <button type="button" onclick="applyCrop()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Crop & Apply</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Inputs -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <label class="block font-semibold mb-1 text-gray-700">👤 Full Name</label>
+          <input id="userName" type="text" class="w-full p-3 border rounded focus:ring-2 focus:ring-green-500" placeholder="Loading..." required>
+        </div>
+        <div>
+          <label class="block font-semibold mb-1 text-gray-700">📧 Email Address</label>
+          <input id="userEmail" type="email" class="w-full p-3 border rounded focus:ring-2 focus:ring-green-500" placeholder="Loading..." required>
+        </div>
+        <div>
+          <label class="block font-semibold mb-1 text-gray-700">📱 Phone Number</label>
+          <input id="userPhone" type="tel" class="w-full p-3 border rounded focus:ring-2 focus:ring-green-500" placeholder="Loading..." required>
+        </div>
+        <div>
+          <label class="block font-semibold mb-1 text-gray-700">📍 Location</label>
+          <input id="userLocation" type="text" class="w-full p-3 border rounded focus:ring-2 focus:ring-green-500" placeholder="Enter your location">
+        </div>
+        <div>
+          <label class="block font-semibold mb-1 text-gray-700">🌐 Preferred Language</label>
+          <select id="userLanguage" class="w-full p-3 border rounded focus:ring-2 focus:ring-green-500">
+            <option value="English">English</option>
+            <option value="Tamil">தமிழ் (Tamil)</option>
+            <option value="Hindi">हिंदी (Hindi)</option>
+            <option value="Telugu">తెలుగు (Telugu)</option>
+            <option value="Kannada">ಕನ್ನಡ (Kannada)</option>
+            <option value="Malayalam">മലയാളം (Malayalam)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-semibold mb-1 text-gray-700">🔒 New Password (Optional)</label>
+          <input id="newPassword" type="password" class="w-full p-3 border rounded focus:ring-2 focus:ring-green-500" placeholder="Leave blank to keep current password" minlength="6">
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex justify-between items-center pt-6 border-t">
+        <div class="flex space-x-3">
+          <button type="button" onclick="window.location.href='profile.html'" class="bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700 transition">
+            ← Back to Profile
+          </button>
+          <button type="button" onclick="window.location.href='dashboard.html'" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+            🏠 Dashboard
+          </button>
+        </div>
+        <div class="flex space-x-3">
+          <button type="button" onclick="resetForm()" class="bg-yellow-600 text-white px-6 py-2 rounded hover:bg-yellow-700 transition">
+            🔄 Reset
+          </button>
+          <button type="submit" id="saveButton" class="bg-green-700 text-white px-6 py-2 rounded hover:bg-green-800 transition">
+            💾 Save Changes
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Authentication -->
+  <script src="auth.js"></script>
+
+  <!-- AgroBot Chat Widget -->
+  <script src="agrobot-chat.js"></script>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/cropperjs/dist/cropper.min.js"></script>
+  <script>
+    const imageInput = document.getElementById('imageInput');
+    const cropModal = document.getElementById('cropModal');
+    const cropImage = document.getElementById('cropImage');
+    const profilePreview = document.getElementById('profilePreview');
+    let cropper;
+    let originalUserData = {};
+
+    imageInput.addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file || !file.type.startsWith('image/')) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        cropImage.src = e.target.result;
+        cropModal.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    });
+
+    cropImage.addEventListener('load', function () {
+      if (cropper) cropper.destroy();
+      cropper = new Cropper(cropImage, {
+        aspectRatio: 1,
+        viewMode: 1
+      });
+    });
+
+    function cancelCrop() {
+      cropModal.classList.add('hidden');
+      if (cropper) {
+        cropper.destroy();
+        cropper = null;
+      }
+      imageInput.value = '';
+    }
+
+    function applyCrop() {
+      if (!cropper) return;
+      const canvas = cropper.getCroppedCanvas({
+        width: 200,
+        height: 200,
+      });
+      profilePreview.src = canvas.toDataURL('image/png');
+      cropModal.classList.add('hidden');
+      cropper.destroy();
+      cropper = null;
+    }
+
+    // Load user settings
+    function loadUserSettings() {
+      const user = getCurrentUser();
+      if (!user) {
+        window.location.href = 'home.html';
+        return;
+      }
+
+      // Store original data for reset functionality
+      originalUserData = { ...user };
+
+      // Populate form fields
+      document.getElementById('userName').value = user.name || '';
+      document.getElementById('userEmail').value = user.email || '';
+      document.getElementById('userPhone').value = user.phone || '';
+      document.getElementById('userLocation').value = user.location || '';
+      document.getElementById('userLanguage').value = user.language || 'English';
+
+      // Update status
+      const memberSince = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown';
+      document.getElementById('userStatus').textContent = `Member since ${memberSince}`;
+    }
+
+    // Save settings
+    function saveSettings(event) {
+      event.preventDefault();
+
+      const saveButton = document.getElementById('saveButton');
+      const originalText = saveButton.textContent;
+      saveButton.textContent = '💾 Saving...';
+      saveButton.disabled = true;
+
+      // Get form data
+      const formData = {
+        name: document.getElementById('userName').value.trim(),
+        email: document.getElementById('userEmail').value.trim(),
+        phone: document.getElementById('userPhone').value.trim(),
+        location: document.getElementById('userLocation').value.trim(),
+        language: document.getElementById('userLanguage').value,
+        newPassword: document.getElementById('newPassword').value
+      };
+
+      // Validate required fields
+      if (!formData.name || !formData.email || !formData.phone) {
+        showError('Please fill in all required fields');
+        saveButton.textContent = originalText;
+        saveButton.disabled = false;
+        return;
+      }
+
+      // Validate email format
+      if (!isValidEmail(formData.email)) {
+        showError('Please enter a valid email address');
+        saveButton.textContent = originalText;
+        saveButton.disabled = false;
+        return;
+      }
+
+      // Simulate save process
+      setTimeout(() => {
+        try {
+          // Get current user and all users
+          const currentUser = getCurrentUser();
+          const users = JSON.parse(localStorage.getItem('agroconnect_users') || '[]');
+
+          // Check if email is already taken by another user
+          const existingUser = users.find(u => u.email === formData.email && u.id !== currentUser.id);
+          if (existingUser) {
+            showError('This email is already registered to another account');
+            saveButton.textContent = originalText;
+            saveButton.disabled = false;
+            return;
+          }
+
+          // Update user data
+          const updatedUser = {
+            ...currentUser,
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            location: formData.location,
+            language: formData.language,
+            updatedAt: new Date().toISOString()
+          };
+
+          // Update password if provided
+          if (formData.newPassword && formData.newPassword.length >= 6) {
+            updatedUser.password = formData.newPassword;
+          }
+
+          // Update in users array
+          const userIndex = users.findIndex(u => u.id === currentUser.id);
+          if (userIndex !== -1) {
+            users[userIndex] = updatedUser;
+            localStorage.setItem('agroconnect_users', JSON.stringify(users));
+          }
+
+          // Update current user session
+          localStorage.setItem('agroconnect_current_user', JSON.stringify(updatedUser));
+
+          // Update original data
+          originalUserData = { ...updatedUser };
+
+          showSuccess('Settings saved successfully! 🎉');
+
+          // Clear password field
+          document.getElementById('newPassword').value = '';
+
+        } catch (error) {
+          showError('Failed to save settings. Please try again.');
+        }
+
+        saveButton.textContent = originalText;
+        saveButton.disabled = false;
+      }, 1000);
+    }
+
+    // Reset form
+    function resetForm() {
+      if (confirm('Are you sure you want to reset all changes?')) {
+        document.getElementById('userName').value = originalUserData.name || '';
+        document.getElementById('userEmail').value = originalUserData.email || '';
+        document.getElementById('userPhone').value = originalUserData.phone || '';
+        document.getElementById('userLocation').value = originalUserData.location || '';
+        document.getElementById('userLanguage').value = originalUserData.language || 'English';
+        document.getElementById('newPassword').value = '';
+
+        hideMessages();
+      }
+    }
+
+    // Utility functions
+    function showSuccess(message) {
+      hideMessages();
+      const successDiv = document.getElementById('successMessage');
+      successDiv.textContent = message;
+      successDiv.style.display = 'block';
+      setTimeout(hideMessages, 5000);
+    }
+
+    function showError(message) {
+      hideMessages();
+      const errorDiv = document.getElementById('errorMessage');
+      errorDiv.textContent = message;
+      errorDiv.style.display = 'block';
+    }
+
+    function hideMessages() {
+      document.getElementById('successMessage').style.display = 'none';
+      document.getElementById('errorMessage').style.display = 'none';
+    }
+
+    function isValidEmail(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    }
+
+    // Load settings when page loads
+    document.addEventListener('DOMContentLoaded', loadUserSettings);
+  </script>
+
+</body>
+</html>
